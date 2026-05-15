@@ -1,15 +1,22 @@
-import rumps
-import subprocess
 import os
+import subprocess
 import sys
+from typing import Any
+
+import rumps
+
 
 class CronBuddyStatusBarApp(rumps.App):
-    def __init__(self):
-        super(CronBuddyStatusBarApp, self).__init__("⏱️")
+    """The macOS Menu Bar application for CronBuddy."""
+
+    def __init__(self) -> None:
+        """Initializes the status bar app."""
+        super().__init__("⏱️")
         self.menu = ["Open CronBuddy", "Quit CronBuddy"]
 
     @rumps.clicked("Open CronBuddy")
-    def open_app(self, _):
+    def open_app(self, _: Any) -> None:
+        """Launches the main CronBuddy application."""
         # We launch app.py using the same python executable (venv)
         app_path = os.path.join(os.path.dirname(__file__), "app.py")
         cmd = [sys.executable, app_path]
@@ -18,7 +25,8 @@ class CronBuddyStatusBarApp(rumps.App):
         subprocess.Popen(cmd)
 
     @rumps.clicked("Quit CronBuddy")
-    def quit_app(self, _):
+    def quit_app(self, _: Any) -> None:
+        """Quits the application."""
         rumps.quit_application()
 
 if __name__ == "__main__":
@@ -28,7 +36,7 @@ if __name__ == "__main__":
     lock_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         lock_socket.bind(("127.0.0.1", 19999))
-    except socket.error:
+    except OSError:
         print("Menubar is already running.")
         sys.exit(0)
         
