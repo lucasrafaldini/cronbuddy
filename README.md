@@ -28,14 +28,27 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Como Executar
+## Como Executar (Desenvolvimento)
 
-O fluxo de trabalho recomendado é inciar o aplicativo sempre através do **Menu Bar**:
+O fluxo de trabalho recomendado para desenvolvimento é inciar o aplicativo através do terminal:
 
 ```bash
 python menubar.py
 ```
-*(Um ícone aparecerá no canto superior direito do seu Mac. Clique nele e selecione "Open CronBuddy" para visualizar a interface principal).*
+*(Um ícone aparecerá no canto superior direito do seu Mac).*
+
+## Gerando o Executável (.app) para macOS
+
+Se você deseja transformar o CronBuddy em um aplicativo nativo do macOS (sem precisar abrir o terminal):
+
+1. Certifique-se de estar com o ambiente virtual ativo.
+2. Execute o comando de build:
+
+```bash
+./build_app.sh
+```
+
+O aplicativo será gerado na pasta `dist/CronBuddy.app`. Você pode arrastá-lo para sua pasta de **Aplicações** e executá-lo como qualquer outro app do Mac.
 
 ### Modo de Teste
 Se você quiser validar um comando rapidamente, inicie o app com a flag de teste:
