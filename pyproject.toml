@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools", "py2app"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "cronbuddy"
 version = "0.1.0"
@@ -19,6 +23,7 @@ dev = [
     "ruff>=0.1.0",
     "pre-commit>=3.0.0",
     "mypy>=1.0.0",
+    "py2app>=0.28.0",
 ]
 
 [tool.ruff]
