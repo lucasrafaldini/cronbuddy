@@ -1,0 +1,40 @@
+[project]
+name = "cronbuddy"
+version = "0.1.0"
+description = "A modern macOS cron job manager"
+authors = [
+    {name = "Lucas Rafaldini", email = "lucas@example.com"}
+]
+dependencies = [
+    "python-crontab>=3.0.0",
+    "customtkinter>=5.2.2",
+    "rumps>=0.4.0",
+]
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-mock>=3.10.0",
+    "ruff>=0.1.0",
+    "pre-commit>=3.0.0",
+    "mypy>=1.0.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "C4", "SIM", "RUF"]
+ignore = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
