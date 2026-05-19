@@ -36,7 +36,12 @@ class TemplateManager:
         try:
             for root, _, files in os.walk(self.templates_dir):
                 for filename in files:
-                    if filename.endswith(".sh") or filename.endswith(".txt") or filename.endswith(".py"):
+                    has_valid_ext = (
+                        filename.endswith(".sh")
+                        or filename.endswith(".txt")
+                        or filename.endswith(".py")
+                    )
+                    if has_valid_ext:
                         filepath = os.path.join(root, filename)
                         display_name, command = self._parse_template(filepath, filename)
                         if display_name and command:
@@ -44,7 +49,7 @@ class TemplateManager:
             logger.info(f"Loaded {len(templates)} templates.")
         except Exception as e:
             logger.error(f"Failed to load templates: {e}")
-            
+
         return templates
 
     def _parse_template(self, filepath: str, filename: str) -> tuple[str | None, str | None]:
@@ -57,40 +62,46 @@ class TemplateManager:
         Returns:
             A tuple of (display_name, command).
         """
-        display_name = filename.replace(".sh", "").replace(".txt", "").replace(".py", "").replace("_", " ").title()
+        display_name = (
+            filename.replace(".sh", "")
+            .replace(".txt", "")
+            .replace(".py", "")
+            .replace("_", " ")
+            .title()
+        )
         command_lines = []
         is_python = filename.endswith(".py") or ("python" in filepath.split(os.sep))
-        
+
         try:
             with open(filepath) as f:
                 lines = f.readlines()
-                
+
             for line in lines:
                 stripped = line.strip()
                 if not stripped:
                     continue
-                    
+
                 # If the first line is a comment starting with # NAME:, use it as title
                 if stripped.startswith("# NAME:") and len(command_lines) == 0:
                     display_name = stripped.replace("# NAME:", "").strip()
                     continue
-                    
+
                 # We ignore generic comments starting with # but keep the commands
                 if stripped.startswith("#"):
                     continue
-                    
+
                 command_lines.append(stripped)
-                
+
             if is_python:
                 return display_name, f"/usr/bin/python3 {filepath}"
-                
+
             if not command_lines:
                 return None, None
-                
+
             # If it's a multi-line script, it's safer to execute the script itself via bash
             if len(command_lines) > 1:
                 return display_name, f"bash {filepath}"
-                
+
             return display_name, command_lines[0]
         except Exception as e:
             logger.error(f"Error parsing template {filename}: {e}")

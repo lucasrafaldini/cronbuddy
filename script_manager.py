@@ -37,13 +37,10 @@ class ScriptManager:
             for filename in os.listdir(self.scripts_dir):
                 filepath = os.path.join(self.scripts_dir, filename)
                 if os.path.isfile(filepath):
-                    scripts.append({
-                        'name': filename,
-                        'path': filepath
-                    })
+                    scripts.append({"name": filename, "path": filepath})
         except Exception as e:
             logger.error(f"Failed to list scripts in {self.scripts_dir}: {e}")
-            
+
         return scripts
 
     def create_or_edit_script(self, filename: str, content: str) -> str:
@@ -58,16 +55,16 @@ class ScriptManager:
         """
         self._ensure_dir()
         filepath = os.path.join(self.scripts_dir, filename)
-        
+
         try:
             # Write content
-            with open(filepath, 'w') as f:
+            with open(filepath, "w") as f:
                 f.write(content)
-                
+
             # Make executable
             st = os.stat(filepath)
             os.chmod(filepath, st.st_mode | stat.S_IEXEC)
-            
+
             logger.info(f"Saved and made executable: {filepath}")
             return filepath
         except Exception as e:
@@ -109,5 +106,5 @@ class ScriptManager:
                 return True
             except Exception as e:
                 logger.error(f"Failed to delete script {filename}: {e}")
-                
+
         return False

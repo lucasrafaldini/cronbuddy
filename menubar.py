@@ -34,9 +34,10 @@ class CronBuddyStatusBarApp(rumps.App):
         """Quits the application."""
         rumps.quit_application()
 
+
 if __name__ == "__main__":
     import socket
-    
+
     # Ensure only one instance of the menubar runs
     lock_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -44,8 +45,8 @@ if __name__ == "__main__":
     except OSError:
         print("Menubar is already running.")
         sys.exit(0)
-        
+
     # We must call rumps.App running to start the event loop
     app = CronBuddyStatusBarApp()
-    app.quit_button = None # we created our own custom quit button for better naming
+    app.quit_button = None  # we created our own custom quit button for better naming
     app.run()

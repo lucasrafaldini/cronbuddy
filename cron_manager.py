@@ -33,14 +33,16 @@ class CronManager:
         self.refresh()
         jobs = []
         for job in self.cron:
-            jobs.append({
-                'id': job.comment if job.comment else str(hash(job.command)),
-                'command': job.command,
-                'schedule': job.slices.render(),
-                'enabled': job.is_enabled(),
-                'comment': job.comment,
-                'raw': job
-            })
+            jobs.append(
+                {
+                    "id": job.comment if job.comment else str(hash(job.command)),
+                    "command": job.command,
+                    "schedule": job.slices.render(),
+                    "enabled": job.is_enabled(),
+                    "comment": job.comment,
+                    "raw": job,
+                }
+            )
         logger.info(f"Retrieved {len(jobs)} cron jobs.")
         return jobs
 
@@ -88,7 +90,7 @@ class CronManager:
             self.cron.write()
             logger.info(f"Edited job {old_comment} -> {new_comment}")
             return job
-        
+
         logger.warning(f"Job with comment '{old_comment}' not found for editing.")
         return None
 
@@ -108,7 +110,7 @@ class CronManager:
             logger.info(f"Enabled job: {comment}")
             return True
         return False
-        
+
     def disable_job(self, comment: str) -> bool:
         """Disables a cron job.
 
