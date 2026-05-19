@@ -34,12 +34,13 @@ class TemplateManager:
         self._ensure_dir()
         templates = {}
         try:
-            for filename in os.listdir(self.templates_dir):
-                if filename.endswith(".sh") or filename.endswith(".txt"):
-                    filepath = os.path.join(self.templates_dir, filename)
-                    display_name, command = self._parse_template(filepath, filename)
-                    if display_name and command:
-                        templates[display_name] = command
+            for root, _, files in os.walk(self.templates_dir):
+                for filename in files:
+                    if filename.endswith(".sh") or filename.endswith(".txt") or filename.endswith(".py"):
+                        filepath = os.path.join(root, filename)
+                        display_name, command = self._parse_template(filepath, filename)
+                        if display_name and command:
+                            templates[display_name] = command
             logger.info(f"Loaded {len(templates)} templates.")
         except Exception as e:
             logger.error(f"Failed to load templates: {e}")
@@ -56,8 +57,9 @@ class TemplateManager:
         Returns:
             A tuple of (display_name, command).
         """
-        display_name = filename.replace(".sh", "").replace(".txt", "").replace("_", " ").title()
+        display_name = filename.replace(".sh", "").replace(".txt", "").replace(".py", "").replace("_", " ").title()
         command_lines = []
+        is_python = filename.endswith(".py") or ("python" in filepath.split(os.sep))
         
         try:
             with open(filepath) as f:
@@ -78,6 +80,9 @@ class TemplateManager:
                     continue
                     
                 command_lines.append(stripped)
+                
+            if is_python:
+                return display_name, f"/usr/bin/python3 {filepath}"
                 
             if not command_lines:
                 return None, None

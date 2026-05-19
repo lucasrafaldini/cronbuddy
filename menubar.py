@@ -11,7 +11,12 @@ class CronBuddyStatusBarApp(rumps.App):
 
     def __init__(self) -> None:
         """Initializes the status bar app."""
-        super().__init__("⏱️")
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        icon_path = os.path.join(current_dir, "assets", "status_icon_template.png")
+        if os.path.exists(icon_path):
+            super().__init__("CronBuddy", icon=icon_path, template=True)
+        else:
+            super().__init__("⏱️")
         self.menu = ["Open CronBuddy", "Quit CronBuddy"]
 
     @rumps.clicked("Open CronBuddy")

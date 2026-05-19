@@ -103,7 +103,6 @@ class JobDialog(ctk.CTkToplevel):
             self.command_entry.insert(0, self.job['command'])
             self.schedule_entry.insert(0, self.job['schedule'])
             self.comment_entry.insert(0, self.job['comment'])
-            self.comment_entry.configure(state="disabled")
 
         self.grab_set()
         
@@ -158,7 +157,7 @@ class JobDialog(ctk.CTkToplevel):
             return
             
         if self.job:
-            self.cron_manager.edit_job(self.job['comment'], command, schedule, self.job['comment'])
+            self.cron_manager.edit_job(self.job['comment'], command, schedule, comment)
         else:
             if not comment:
                 comment = "CronBuddy_" + str(hash(command + schedule))

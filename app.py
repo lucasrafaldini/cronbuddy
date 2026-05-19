@@ -1,10 +1,13 @@
 import os
+import plistlib
 import subprocess
 import sys
+import tkinter as tk
 import tkinter.messagebox as messagebox
 from typing import Any
 
 import customtkinter as ctk
+from PIL import Image
 
 from cron_manager import CronManager
 from logger import logger
@@ -29,6 +32,15 @@ class CronBuddyApp(ctk.CTk):
         self.title("CronBuddy - macOS Cron Manager")
         self.geometry("900x600")
         
+        # Set window icon if available
+        icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "cronbuddy.png")
+        if os.path.exists(icon_path):
+            try:
+                photo = tk.PhotoImage(file=icon_path)
+                self.wm_iconphoto(True, photo)
+            except Exception as e:
+                logger.error(f"Failed to set window icon: {e}")
+        
         self.cron_manager = CronManager()
         
         base_script_dir = os.path.expanduser("~/CronBuddyScripts")
@@ -46,12 +58,31 @@ class CronBuddyApp(ctk.CTk):
         self.sidebar = ctk.CTkFrame(self, width=200, corner_radius=0)
         self.sidebar.grid(row=0, column=0, sticky="nsew")
         
+        # Load logo image if available
+        logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "cronbuddy.png")
+        if os.path.exists(logo_path):
+            try:
+                pil_logo = Image.open(logo_path)
+                self.logo_image = ctk.CTkImage(
+                    light_image=pil_logo,
+                    dark_image=pil_logo,
+                    size=(64, 64)
+                )
+                self.logo_img_label = ctk.CTkLabel(
+                    self.sidebar,
+                    image=self.logo_image,
+                    text=""
+                )
+                self.logo_img_label.pack(pady=(20, 5), padx=20)
+            except Exception as e:
+                logger.error(f"Failed to load sidebar logo image: {e}")
+
         self.logo_label = ctk.CTkLabel(
             self.sidebar, 
             text="CronBuddy", 
             font=ctk.CTkFont(size=20, weight="bold")
         )
-        self.logo_label.pack(pady=20, padx=20)
+        self.logo_label.pack(pady=(5, 20), padx=20)
         
         self.btn_add_job = ctk.CTkButton(self.sidebar, text="Add Cron Job", command=self.add_job)
         self.btn_add_job.pack(pady=10, padx=20)
@@ -61,6 +92,17 @@ class CronBuddyApp(ctk.CTk):
         
         self.btn_refresh = ctk.CTkButton(self.sidebar, text="Refresh", command=self.refresh_jobs)
         self.btn_refresh.pack(pady=10, padx=20)
+        
+        # Launch at Login Checkbox
+        self.start_at_login_var = ctk.BooleanVar(value=self.is_launch_at_login_enabled())
+        self.chk_start_at_login = ctk.CTkCheckBox(
+            self.sidebar, 
+            text="Start with macOS", 
+            variable=self.start_at_login_var, 
+            command=self.toggle_start_at_login,
+            font=ctk.CTkFont(size=12)
+        )
+        self.chk_start_at_login.pack(pady=(20, 10), padx=20, anchor="w")
         
         # Main View
         self.main_view = ctk.CTkScrollableFrame(self)
@@ -144,39 +186,120 @@ class CronBuddyApp(ctk.CTk):
         )
         lbl_cmd.pack(fill="x", padx=10, pady=5)
         
-        # Right side buttons
-        right_frame = ctk.CTkFrame(frame, fg_color="transparent")
-        right_frame.pack(side="right", padx=15, pady=15)
+        # Actions Row (under command)
+        actions_frame = ctk.CTkFrame(left_frame, fg_color="transparent")
+        actions_frame.pack(fill="x", pady=(10, 0))
         
         toggle_text = "Pause" if job['enabled'] else "Resume"
         toggle_color = "#f0ad4e" if job['enabled'] else "#5cb85c"
-        btn_toggle = ctk.CTkButton(
-            right_frame, 
-            text=toggle_text, 
-            width=70, 
-            fg_color=toggle_color, 
-            command=lambda j=job: self.toggle_job(j)
-        )
-        btn_toggle.pack(side="left", padx=5)
         
-        btn_edit = ctk.CTkButton(
-            right_frame, 
-            text="Edit", 
-            width=70, 
-            fg_color=("#3a7ebf", "#1f538d"), 
-            command=lambda j=job: self.edit_job(j)
-        )
-        btn_edit.pack(side="left", padx=5)
-
+        # Delete Button (Far Right)
         btn_delete = ctk.CTkButton(
-            right_frame, 
+            actions_frame, 
             text="Delete", 
             width=70, 
             fg_color="#d9534f", 
             hover_color="#c9302c", 
             command=lambda c=job['comment']: self.delete_job(c)
         )
-        btn_delete.pack(side="left", padx=5)
+        btn_delete.pack(side="right", padx=5)
+        
+        # Edit Button
+        btn_edit = ctk.CTkButton(
+            actions_frame, 
+            text="Edit", 
+            width=70, 
+            fg_color=("#3a7ebf", "#1f538d"), 
+            command=lambda j=job: self.edit_job(j)
+        )
+        btn_edit.pack(side="right", padx=5)
+
+        # Toggle Button
+        btn_toggle = ctk.CTkButton(
+            actions_frame, 
+            text=toggle_text, 
+            width=70, 
+            fg_color=toggle_color, 
+            command=lambda j=job: self.toggle_job(j)
+        )
+        btn_toggle.pack(side="right", padx=5)
+        
+        # Run Now Button
+        btn_run = ctk.CTkButton(
+            actions_frame, 
+            text="▶ Run Now", 
+            width=80, 
+            fg_color=("#2b9348", "#157f1f"), 
+            hover_color=("#007f5f", "#006400"),
+            command=lambda j=job: self.run_job_now(j)
+        )
+        btn_run.pack(side="right", padx=5)
+
+    def run_job_now(self, job: dict[str, Any]) -> None:
+        """Executes the cron job's command immediately in the background."""
+        command = job['command']
+        try:
+            subprocess.Popen(command, shell=True)
+            messagebox.showinfo("Success", f"Command executed in the background:\n\n{command}")
+        except Exception as e:
+            logger.error(f"Failed to execute command '{command}' immediately: {e}")
+            messagebox.showerror("Error", f"Failed to execute command:\n{e}")
+
+    def get_app_bundle_path(self) -> str | None:
+        """Finds the absolute path to the .app bundle if running from one."""
+        exe_path = os.path.abspath(sys.argv[0])
+        parts = exe_path.split(os.sep)
+        for i, part in enumerate(parts):
+            if part.endswith(".app"):
+                return os.sep.join(parts[:i+1])
+        return None
+
+    def is_launch_at_login_enabled(self) -> bool:
+        """Checks if the CronBuddy LaunchAgent plist exists."""
+        plist_path = os.path.expanduser("~/Library/LaunchAgents/com.lucasrafaldini.cronbuddy.plist")
+        return os.path.exists(plist_path)
+
+    def toggle_start_at_login(self) -> None:
+        """Toggles the LaunchAgent plist based on the checkbox state."""
+        enabled = self.start_at_login_var.get()
+        plist_path = os.path.expanduser("~/Library/LaunchAgents/com.lucasrafaldini.cronbuddy.plist")
+        
+        if not enabled:
+            if os.path.exists(plist_path):
+                try:
+                    os.remove(plist_path)
+                    logger.info("Removed LaunchAgent plist to disable startup on login.")
+                except Exception as e:
+                    logger.error(f"Failed to remove LaunchAgent plist: {e}")
+                    messagebox.showerror("Error", f"Failed to disable start with macOS:\n{e}")
+            return
+            
+        # Enable start at login
+        app_path = self.get_app_bundle_path()
+        if not app_path:
+            logger.warning("Not running inside a .app bundle, skipping LaunchAgent creation.")
+            # For development mode, show a friendly warning but check the checkbox
+            messagebox.showinfo(
+                "Development Mode", 
+                "Start with macOS will only take effect when running the compiled App bundle."
+            )
+            return
+            
+        plist_data = {
+            "Label": "com.lucasrafaldini.cronbuddy",
+            "ProgramArguments": ["/usr/bin/open", "-a", app_path],
+            "RunAtLoad": True
+        }
+        
+        try:
+            # Ensure folder exists
+            os.makedirs(os.path.dirname(plist_path), exist_ok=True)
+            with open(plist_path, "wb") as f:
+                plistlib.dump(plist_data, f)
+            logger.info(f"Created LaunchAgent plist at {plist_path}")
+        except Exception as e:
+            logger.error(f"Failed to create LaunchAgent plist: {e}")
+            messagebox.showerror("Error", f"Failed to enable start with macOS:\n{e}")
 
     def add_job(self) -> None:
         """Opens the dialog to add a new cron job."""
