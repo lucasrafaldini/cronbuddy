@@ -33,7 +33,7 @@ class CronBuddyApp(ctk.CTk):
         self.geometry("900x600")
         
         # Set window icon if available
-        icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "cronbuddy.png")
+        icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "genfavicon-512.png")
         if os.path.exists(icon_path):
             try:
                 photo = tk.PhotoImage(file=icon_path)
@@ -59,7 +59,7 @@ class CronBuddyApp(ctk.CTk):
         self.sidebar.grid(row=0, column=0, sticky="nsew")
         
         # Load logo image if available
-        logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "cronbuddy.png")
+        logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "genfavicon-512.png")
         if os.path.exists(logo_path):
             try:
                 pil_logo = Image.open(logo_path)
