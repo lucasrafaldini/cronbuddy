@@ -101,6 +101,22 @@ class CronBuddyApp(ctk.CTk):
         )
         self.chk_start_at_login.pack(pady=(20, 10), padx=20, anchor="w")
 
+        # Open Scripts Folder Button
+        self.btn_open_folder = ctk.CTkButton(
+            self.sidebar,
+            text="📂 Open Scripts Folder",
+            command=self.open_scripts_folder,
+            font=ctk.CTkFont(size=11),
+            height=26,
+            width=150,
+            fg_color="transparent",
+            border_width=1,
+            border_color=("#d3d3d3", "#4A4A4A"),
+            text_color=("#1A1A1A", "#E6E6E6"),
+            hover_color=("#e6e6e6", "#3A3A3A"),
+        )
+        self.btn_open_folder.pack(pady=(5, 10), padx=20, anchor="w")
+
         # Main View
         self.main_view = ctk.CTkScrollableFrame(self)
         self.main_view.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
@@ -355,6 +371,22 @@ class CronBuddyApp(ctk.CTk):
         self._build_file_manager_tab(window, tab_python, self.python_manager)
         self._build_file_manager_tab(window, tab_logs, self.log_manager)
         self._build_file_manager_tab(window, tab_templates, self.template_manager)
+
+    def open_scripts_folder(self) -> None:
+        """Opens the user scripts directory in macOS Finder."""
+        scripts_dir = os.path.expanduser("~/CronBuddyScripts")
+        if not os.path.exists(scripts_dir):
+            try:
+                os.makedirs(scripts_dir, exist_ok=True)
+                for sub in ["shell", "python", "logs"]:
+                    os.makedirs(os.path.join(scripts_dir, sub), exist_ok=True)
+            except Exception as e:
+                logger.error(f"Failed to create scripts directory: {e}")
+
+        try:
+            subprocess.run(["open", scripts_dir])
+        except Exception as e:
+            logger.error(f"Failed to open directory in Finder: {e}")
 
     def _build_file_manager_tab(
         self, window: ctk.CTkToplevel, parent_tab: ctk.CTkFrame, manager: ScriptManager
