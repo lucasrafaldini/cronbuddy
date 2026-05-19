@@ -17,6 +17,16 @@ def test_template_parsing(tmp_path):
     # Template 3: Generic name from filename
     t3 = template_dir / "clear_logs.sh"
     t3.write_text("rm -rf /tmp/logs/*")
+    
+    # Template 4: Python in subfolder
+    python_dir = template_dir / "python"
+    python_dir.mkdir()
+    t4 = python_dir / "hello.py"
+    t4.write_text("# NAME: Hello Python\nprint('hello')")
+    
+    # Template 5: Python on root
+    t5 = template_dir / "root_test.py"
+    t5.write_text("print('root')")
 
     manager = TemplateManager(templates_dir=str(template_dir))
     # We need to hack the internal path for testing because TemplateManager 
@@ -33,3 +43,9 @@ def test_template_parsing(tmp_path):
     
     assert "Clear Logs" in templates
     assert templates["Clear Logs"] == "rm -rf /tmp/logs/*"
+    
+    assert "Hello Python" in templates
+    assert templates["Hello Python"] == f"/usr/bin/python3 {t4}"
+    
+    assert "Root Test" in templates
+    assert templates["Root Test"] == f"/usr/bin/python3 {t5}"

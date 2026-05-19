@@ -8,7 +8,8 @@ DATA_FILES = [
     'script_manager.py',
     'template_manager.py',
     'ui_components.py',
-    'logger.py'
+    'logger.py',
+    'assets'
 ]
 OPTIONS = {
     'argv_emulation': True,
@@ -21,6 +22,7 @@ OPTIONS = {
         'CFBundleShortVersionString': "0.1.0",
     },
     'packages': ['rumps', 'customtkinter', 'crontab', 'PIL'],
+    'iconfile': 'assets/app_icon.icns',
 }
 
 setup(
