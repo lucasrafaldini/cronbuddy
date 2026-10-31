@@ -5,6 +5,7 @@ from typing import Any
 import customtkinter as ctk
 
 from cron_manager import CronManager
+from job_runner import unwrap_command, wrap_command
 from script_manager import ScriptManager
 from template_manager import TemplateManager
 
@@ -19,6 +20,7 @@ class JobDialog(ctk.CTkToplevel):
         job: dict[str, Any] | None = None,
         title: str = "Add Cron Job",
         is_test_mode: bool = False,
+        app_path: str | None = None,
     ) -> None:
         """Initializes the JobDialog.
 
@@ -28,14 +30,16 @@ class JobDialog(ctk.CTkToplevel):
             job: The job to edit (if any).
             title: The window title.
             is_test_mode: Whether to enable test mode features.
+            app_path: Path to the running CronBuddy.app bundle, if any.
         """
         super().__init__(parent)
         self.title(title)
-        self.geometry("500x500")
+        self.geometry("500x580")
         self.cron_manager = cron_manager
         self.job = job
         self.result = False
         self.is_test_mode = is_test_mode
+        self.app_path = app_path
 
         # Command Section
         self.command_label = ctk.CTkLabel(self, text="Command/Script to execute:")
@@ -96,13 +100,33 @@ class JobDialog(ctk.CTkToplevel):
         self.comment_entry = ctk.CTkEntry(self, width=460)
         self.comment_entry.pack(pady=5, padx=20)
 
+        # Run through CronBuddy (inherits the app's macOS permissions, e.g. Full Disk Access)
+        self.via_app_var = ctk.BooleanVar(value=False)
+        self.via_app_check = ctk.CTkCheckBox(
+            self,
+            text="Run through CronBuddy (uses its macOS permissions, e.g. Full Disk Access)",
+            variable=self.via_app_var,
+        )
+        self.via_app_check.pack(pady=(15, 0), padx=20, anchor="w")
+        self.via_app_hint = ctk.CTkLabel(
+            self,
+            text="Needed for iCloud Drive, external disks and other protected folders.\n"
+            "Output goes to ~/CronBuddyScripts/logs.",
+            font=ctk.CTkFont(size=11),
+            text_color=("#666666", "#999999"),
+            justify="left",
+        )
+        self.via_app_hint.pack(padx=48, anchor="w")
+
         self.save_btn = ctk.CTkButton(self, text="Save Job", command=self.save)
         self.save_btn.pack(pady=25)
 
         if self.job:
-            self.command_entry.insert(0, self.job["command"])
+            command, via_app = unwrap_command(self.job["command"])
+            self.command_entry.insert(0, command)
             self.schedule_entry.insert(0, self.job["schedule"])
             self.comment_entry.insert(0, self.job["comment"])
+            self.via_app_var.set(via_app)
 
         self.grab_set()
 
@@ -156,11 +180,17 @@ class JobDialog(ctk.CTkToplevel):
             messagebox.showerror("Error", "Invalid Cron Schedule.")
             return
 
+        if not comment and not self.job:
+            comment = "CronBuddy_" + str(hash(command + schedule))
+        if self.via_app_var.get():
+            if self.app_path:
+                command = wrap_command(command, comment, self.app_path)
+            else:
+                command = wrap_command(command, comment)
+
         if self.job:
             self.cron_manager.edit_job(self.job["comment"], command, schedule, comment)
         else:
-            if not comment:
-                comment = "CronBuddy_" + str(hash(command + schedule))
             self.cron_manager.add_job(command, schedule, comment)
 
         self.result = True

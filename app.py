@@ -10,6 +10,7 @@ import customtkinter as ctk
 from PIL import Image
 
 from cron_manager import CronManager
+from job_runner import unwrap_command
 from logger import logger
 from script_manager import ScriptManager
 from ui_components import JobDialog, ScriptDialog
@@ -182,13 +183,24 @@ class CronBuddyApp(ctk.CTk):
         )
         lbl_schedule.pack(side="left", padx=15)
 
+        command, via_app = unwrap_command(job["command"])
+        if via_app:
+            lbl_via_app = ctk.CTkLabel(
+                header_frame,
+                text=" 🛡 via CronBuddy ",
+                font=ctk.CTkFont(size=12),
+                fg_color=("#cfe3ff", "#1f3a5f"),
+                corner_radius=6,
+            )
+            lbl_via_app.pack(side="left")
+
         # Body: Command
         command_frame = ctk.CTkFrame(left_frame, fg_color=("#dcdcdc", "#1f1f1f"), corner_radius=6)
         command_frame.pack(fill="x", pady=(10, 0))
 
         lbl_cmd = ctk.CTkLabel(
             command_frame,
-            text=job["command"],
+            text=command,
             font=ctk.CTkFont(family="Courier", size=13),
             justify="left",
             anchor="w",
@@ -312,7 +324,12 @@ class CronBuddyApp(ctk.CTk):
 
     def add_job(self) -> None:
         """Opens the dialog to add a new cron job."""
-        dialog = JobDialog(self, self.cron_manager, is_test_mode=self.is_test_mode)
+        dialog = JobDialog(
+            self,
+            self.cron_manager,
+            is_test_mode=self.is_test_mode,
+            app_path=self.get_app_bundle_path(),
+        )
         self.wait_window(dialog)
         if dialog.result:
             self.refresh_jobs()
@@ -324,7 +341,12 @@ class CronBuddyApp(ctk.CTk):
             job: The job data dictionary.
         """
         dialog = JobDialog(
-            self, self.cron_manager, job=job, title="Edit Cron Job", is_test_mode=self.is_test_mode
+            self,
+            self.cron_manager,
+            job=job,
+            title="Edit Cron Job",
+            is_test_mode=self.is_test_mode,
+            app_path=self.get_app_bundle_path(),
         )
         self.wait_window(dialog)
         if dialog.result:

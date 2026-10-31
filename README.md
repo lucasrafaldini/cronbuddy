@@ -74,6 +74,16 @@ python menubar.py --test
 ```
 This flag will add a special **"One Minute From Now (Test)"** option when choosing the time for a Cron Job. It will schedule the command to run exactly in the following minute!
 
+### Running Jobs with CronBuddy's Permissions (Full Disk Access)
+
+macOS does not give cron any privacy permission, so jobs that touch iCloud Drive, external disks or other protected folders fail with `Operation not permitted`. Tick **"Run through CronBuddy"** when creating or editing a job and CronBuddy runs the command itself, so a single permission covers every such job:
+
+1. Open **System Settings → Privacy & Security → Full Disk Access** and add `CronBuddy.app`.
+2. Mark the job with **"Run through CronBuddy"**. Its card shows a **🛡 via CronBuddy** badge.
+3. Each run appends the job's output and exit code to `~/CronBuddyScripts/logs/cronbuddy_<job>_<date>.log`, visible in the Logs tab.
+
+Under the hood the crontab line becomes `/usr/bin/open -g -W -n -a CronBuddy.app --args --run '<command>' --name '<job>'`. A rebuilt app gets a new signature, so grant Full Disk Access again after rebuilding.
+
 ### Directory Structure
 
 CronBuddy organizes files in two main locations:
@@ -150,6 +160,16 @@ python menubar.py --test
 ```
 Essa flag adicionará uma opção especial **"One Minute From Now (Test)"** no momento em que você for escolher o horário de um Cron Job. Ela agendará o comando para rodar exatamente no minuto seguinte!
 
+### Executando Jobs com as Permissões do CronBuddy (Acesso Total ao Disco)
+
+O macOS não dá nenhuma permissão de privacidade ao cron, então jobs que mexem no iCloud Drive, em discos externos ou em outras pastas protegidas falham com `Operation not permitted`. Marque **"Run through CronBuddy"** ao criar ou editar um job e o próprio CronBuddy executa o comando, de modo que uma única permissão vale para todos esses jobs:
+
+1. Abra **Ajustes do Sistema → Privacidade e Segurança → Acesso Total ao Disco** e adicione o `CronBuddy.app`.
+2. Marque o job com **"Run through CronBuddy"**. O card dele mostra o selo **🛡 via CronBuddy**.
+3. Cada execução acrescenta a saída e o código de saída do job em `~/CronBuddyScripts/logs/cronbuddy_<job>_<data>.log`, visível na aba Logs.
+
+Por baixo dos panos, a linha do crontab vira `/usr/bin/open -g -W -n -a CronBuddy.app --args --run '<comando>' --name '<job>'`. Um app recompilado ganha uma assinatura nova, então conceda o Acesso Total ao Disco de novo depois de recompilar.
+
 ### Estrutura de Diretórios
 
 O CronBuddy organiza arquivos em dois lugares principais:
@@ -225,6 +245,16 @@ Si deseas validar un comando rápidamente, inicia la aplicación con la bandera 
 python menubar.py --test
 ```
 ¡Esta bandera agregará una opción especial **"One Minute From Now (Test)"** al momento de elegir el horario de un Cron Job. Programará el comando para ejecutarse exactamente en el minuto siguiente!
+
+### Ejecutando Jobs con los Permisos de CronBuddy (Acceso Total al Disco)
+
+macOS no le da ningún permiso de privacidad a cron, así que los jobs que tocan iCloud Drive, discos externos u otras carpetas protegidas fallan con `Operation not permitted`. Marca **"Run through CronBuddy"** al crear o editar un job y el propio CronBuddy ejecuta el comando, de modo que un único permiso cubre todos esos jobs:
+
+1. Abre **Ajustes del Sistema → Privacidad y Seguridad → Acceso Total al Disco** y añade `CronBuddy.app`.
+2. Marca el job con **"Run through CronBuddy"**. Su tarjeta muestra la insignia **🛡 via CronBuddy**.
+3. Cada ejecución añade la salida y el código de salida del job en `~/CronBuddyScripts/logs/cronbuddy_<job>_<fecha>.log`, visible en la pestaña Logs.
+
+Por debajo, la línea del crontab se convierte en `/usr/bin/open -g -W -n -a CronBuddy.app --args --run '<comando>' --name '<job>'`. Una app recompilada recibe una firma nueva, así que concede el Acceso Total al Disco de nuevo después de recompilar.
 
 ### Estructura de Directorios
 

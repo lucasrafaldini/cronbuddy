@@ -13,6 +13,7 @@ if "py2app" in sys.argv:
         "script_manager.py",
         "template_manager.py",
         "ui_components.py",
+        "job_runner.py",
         "logger.py",
         "assets",
     ]

@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file.
 ---
 
 <a id="english"></a>
+## [Unreleased]
+
+### Added
+- **Run through CronBuddy**: a new job option makes cron launch the command through `CronBuddy.app` (`--run` mode), so jobs inherit the app's macOS permissions. A single Full Disk Access grant now covers jobs that touch iCloud Drive, external disks and other protected folders. Each run is logged to `~/CronBuddyScripts/logs/cronbuddy_<job>_<date>.log`, and wrapped jobs show a **🛡 via CronBuddy** badge.
+
 ## [1.0.0] - v1.0.0 Release
 
 ### Added
@@ -26,6 +31,11 @@ All notable changes to this project will be documented in this file.
 ---
 
 <a id="português"></a>
+## [Não lançado]
+
+### Adicionado
+- **Executar pelo CronBuddy**: uma nova opção de job faz o cron lançar o comando pelo `CronBuddy.app` (modo `--run`), de modo que os jobs herdam as permissões do app no macOS. Uma única concessão de Acesso Total ao Disco passa a cobrir jobs que mexem no iCloud Drive, em discos externos e em outras pastas protegidas. Cada execução é registrada em `~/CronBuddyScripts/logs/cronbuddy_<job>_<data>.log`, e os jobs nesse modo mostram o selo **🛡 via CronBuddy**.
+
 ## [1.0.0] - Lançamento da v1.0.0
 
 ### Adicionado
@@ -41,6 +51,11 @@ All notable changes to this project will be documented in this file.
 ---
 
 <a id="español"></a>
+## [Sin publicar]
+
+### Añadido
+- **Ejecutar con CronBuddy**: una nueva opción de job hace que cron lance el comando a través de `CronBuddy.app` (modo `--run`), de modo que los jobs heredan los permisos de la app en macOS. Una única concesión de Acceso Total al Disco cubre ahora los jobs que tocan iCloud Drive, discos externos y otras carpetas protegidas. Cada ejecución se registra en `~/CronBuddyScripts/logs/cronbuddy_<job>_<fecha>.log`, y los jobs en este modo muestran la insignia **🛡 via CronBuddy**.
+
 ## [1.0.0] - Lanzamiento de v1.0.0
 
 ### Añadido

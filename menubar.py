@@ -38,6 +38,13 @@ class CronBuddyStatusBarApp(rumps.App):
 if __name__ == "__main__":
     import socket
 
+    from job_runner import parse_run_args, run_job
+
+    # Run mode: cron asked CronBuddy to execute a job with the app's permissions
+    run_args = parse_run_args(sys.argv)
+    if run_args:
+        sys.exit(run_job(*run_args))
+
     # Ensure only one instance of the menubar runs
     lock_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
