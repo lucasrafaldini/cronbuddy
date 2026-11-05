@@ -11,11 +11,23 @@ All notable changes to this project will be documented in this file.
 ---
 
 <a id="english"></a>
-## [Unreleased]
+## [2.0.0] - Native rewrite
+
+CronBuddy is now a native Swift and SwiftUI app. The Python implementation is retired.
 
 ### Added
-- **Run through CronBuddy**: a new job option makes cron launch the command through `CronBuddy.app` (`--run` mode), so jobs inherit the app's macOS permissions. A single Full Disk Access grant now covers jobs that touch iCloud Drive, external disks and other protected folders. Each run is logged to `~/CronBuddyScripts/logs/cronbuddy_<job>_<date>.log`, and wrapped jobs show a **🛡 via CronBuddy** badge.
+- **Rich menu bar**: upcoming runs, each job's last result, run and pause from the menu, optional countdown to the next run.
+- **New kinds of action**: script files (shell, Python, Ruby, AppleScript, JXA, Automator workflows), inline AppleScript and Shortcuts, alongside shell commands.
+- **launchd scheduling** (now the default) next to cron, with plain-language schedules: intervals, several times a day, weekdays, days of the month, at login, or raw cron. The editor previews the next runs.
+- **Test Run** in the editor with live output, and **Run Now** with live output on every job.
+- **Run history**: output, exit code and duration for every run, log search, per-job success rate, and an *Activity* view across all jobs.
+- **Notifications** on failure, or on success with an output preview.
+- **Twenty templates**, many ported from Khronos, plus **Import from crontab**.
+- **Themes**: System, Thoth, Paper, Phosphor and Nord.
+- Every job runs through CronBuddy's own executable, so one Full Disk Access grant covers them all. Lines written by 1.x (`--run … --name …`) keep working and can be imported.
 
+### Removed
+- The Python app, its `~/CronBuddyScripts` file manager and the `templates/` folder.
 ## [1.0.0] - v1.0.0 Release
 
 ### Added
@@ -31,11 +43,23 @@ All notable changes to this project will be documented in this file.
 ---
 
 <a id="português"></a>
-## [Não lançado]
+## [2.0.0] - Reescrita nativa
+
+O CronBuddy agora é um app nativo em Swift e SwiftUI. A implementação em Python foi aposentada.
 
 ### Adicionado
-- **Executar pelo CronBuddy**: uma nova opção de job faz o cron lançar o comando pelo `CronBuddy.app` (modo `--run`), de modo que os jobs herdam as permissões do app no macOS. Uma única concessão de Acesso Total ao Disco passa a cobrir jobs que mexem no iCloud Drive, em discos externos e em outras pastas protegidas. Cada execução é registrada em `~/CronBuddyScripts/logs/cronbuddy_<job>_<data>.log`, e os jobs nesse modo mostram o selo **🛡 via CronBuddy**.
+- **Barra de menus completa**: próximas execuções, último resultado de cada job, rodar e pausar pelo menu, contagem regressiva opcional.
+- **Novos tipos de ação**: arquivos de script (shell, Python, Ruby, AppleScript, JXA, fluxos do Automator), AppleScript inline e Atalhos, além de comandos de shell.
+- **Agendamento via launchd** (agora o padrão) ao lado do cron, com agendamentos em linguagem natural e prévia das próximas execuções.
+- **Test Run** no editor e **Run Now** em cada job, com saída ao vivo.
+- **Histórico**: saída, código de saída e duração de cada execução, busca nos logs, taxa de sucesso e a tela *Activity*.
+- **Notificações** de falha, ou de sucesso com prévia da saída.
+- **Vinte templates**, muitos vindos do Khronos, e **Import from crontab**.
+- **Temas**: Sistema, Thoth, Paper, Phosphor e Nord.
+- Todo job roda pelo executável do CronBuddy, então uma única permissão de Acesso Total ao Disco vale para todos. Linhas criadas pela 1.x (`--run … --name …`) continuam funcionando e podem ser importadas.
 
+### Removido
+- O app em Python, o gerenciador de arquivos de `~/CronBuddyScripts` e a pasta `templates/`.
 ## [1.0.0] - Lançamento da v1.0.0
 
 ### Adicionado
@@ -51,11 +75,16 @@ All notable changes to this project will be documented in this file.
 ---
 
 <a id="español"></a>
-## [Sin publicar]
+## [2.0.0] - Reescritura nativa
+
+CronBuddy ahora es una app nativa en Swift y SwiftUI. La implementación en Python queda retirada.
 
 ### Añadido
-- **Ejecutar con CronBuddy**: una nueva opción de job hace que cron lance el comando a través de `CronBuddy.app` (modo `--run`), de modo que los jobs heredan los permisos de la app en macOS. Una única concesión de Acceso Total al Disco cubre ahora los jobs que tocan iCloud Drive, discos externos y otras carpetas protegidas. Cada ejecución se registra en `~/CronBuddyScripts/logs/cronbuddy_<job>_<fecha>.log`, y los jobs en este modo muestran la insignia **🛡 via CronBuddy**.
+- **Barra de menús completa**, nuevos tipos de acción (scripts, AppleScript, Automator, Atajos), programación con **launchd** (por defecto) o cron, **Test Run** y **Run Now** con salida en vivo, historial con búsqueda, notificaciones, veinte plantillas, **Import from crontab** y cinco temas.
+- Cada job se ejecuta a través del ejecutable de CronBuddy, así que un único permiso de Acceso Total al Disco los cubre todos. Las líneas de la 1.x (`--run … --name …`) siguen funcionando y pueden importarse.
 
+### Eliminado
+- La app en Python, el gestor de archivos de `~/CronBuddyScripts` y la carpeta `templates/`.
 ## [1.0.0] - Lanzamiento de v1.0.0
 
 ### Añadido
