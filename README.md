@@ -1,12 +1,12 @@
 # CronBuddy
 
 <p align="center">
-  <img src="assets/cronbuddy-slogan.png" alt="CronBuddy Logo" width="600">
+  <img src="assets/cronbuddy-slogan.png" alt="CronBuddy" width="600">
 </p>
 
 <p align="center">
-  <a href="#english">English</a> | 
-  <a href="#português">Português</a> | 
+  <a href="#english">English</a> ·
+  <a href="#português">Português</a> ·
   <a href="#español">Español</a>
 </p>
 
@@ -15,255 +15,136 @@
 <a id="english"></a>
 ## English
 
-**CronBuddy** is a modern and native `cron job` manager for macOS, built entirely in Python. Unlike traditional terminal solutions, CronBuddy offers a minimalist graphical interface (with native Dark Mode support), direct integration with the Mac's Menu Bar, and a built-in file manager to easily handle logs, scripts, and command templates.
+**CronBuddy** is a native macOS menu bar app for scheduling things on your Mac: shell commands, scripts, AppleScripts, Automator workflows and Shortcuts. It shows what runs next, keeps the full output of every run, and tells you when something fails.
+
+Version 2 is a rewrite in Swift and SwiftUI. It replaces the original Python app.
 
 ### Features
 
-- **Visual Cron Manager:** Visualize all of your active and inactive schedules in modern and stylish cards.
-- **Menu Bar Icon:** The app runs silently at the top of your screen, using the `rumps` library tailored for the Apple ecosystem.
-- **Intuitive Scheduling:** Instead of trying to remember the cron syntax (`* * * * *`), the interface offers easy dropdowns/selections like "Every Day at Midnight", which automatically translate your wishes into code.
-- **Dynamic Templates:** The `templates/` folder in the project serves as a gallery of useful commands (e.g., Empty trash, Ping, Check CPU Logs). Add your scripts there and the interface will absorb the template instantly.
-- **Multi-Tab File Manager:** With just one click, view, create, delete, and edit scripts created by you in your local folder. It features exclusive tabs for:
-  - Shell Scripts (`~/CronBuddyScripts/shell`)
-  - Python Scripts (`~/CronBuddyScripts/python`)
-  - Execution Logs (`~/CronBuddyScripts/logs`)
-  - Your Custom Templates (`/templates`)
-- **Start with macOS (Autostart):** Enable or disable starting CronBuddy automatically at system login directly via a modern checkbox in the sidebar.
+- **Menu bar first.** See the next runs, each job's last result, and run or pause any job without opening a window. Optional countdown to the next run in the menu bar.
+- **Four kinds of action.** A shell command, a script file (shell, Python, Ruby, AppleScript `.scpt`, JavaScript for Automation, Automator `.workflow`), inline AppleScript, or any shortcut from the Shortcuts app.
+- **Schedules in plain language.** Every N minutes or hours, hourly, daily at several times, chosen weekdays, chosen days of the month, at login, or a raw cron expression. The editor previews the next runs as you type.
+- **launchd or cron.** launchd is the default: it's the macOS-native scheduler and catches up on runs missed while the Mac slept. cron is there when you want it.
+- **Test before saving.** *Test Run* in the editor runs the action exactly as written and streams its output live.
+- **History and logs.** Every run, scheduled or manual, is recorded with its output, exit code and duration. Search inside any log, see a job's success rate, or review every run in *Activity*.
+- **Notifications** when a run fails, or optionally when it succeeds, with a preview of its output.
+- **Templates.** Twenty ready-made jobs: disk reports, backups, uptime checks, Homebrew updates, weather, exchange rates, break reminders, Dark Mode in the evening and more.
+- **Import from crontab.** Existing crontab entries can be adopted with one click, gaining logs and history.
+- **Themes.** System, Thoth (black and gold), Paper, Phosphor and Nord.
 
-### Prerequisites and Installation
+### Install
 
-1. Make sure you have Python 3 installed on your macOS. Using a virtual environment (`venv`) is highly recommended.
-2. If Python complains about the missing GUI package (`_tkinter` missing), be sure to install it via Homebrew (e.g., `brew install python-tk@3.14`).
-3. Clone this repository and install the dependencies:
+Requires macOS 14 or later and Xcode (or the Swift 6 toolchain).
 
 ```bash
 git clone https://github.com/lucasrafaldini/cronbuddy.git
 cd cronbuddy
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+make install
 ```
 
-### How to Run (Development)
+`make install` builds `CronBuddy.app` and copies it to `/Applications`. Use `make app` to only build it into `build/`, `make dmg` for a disk image, and `make test` to run the test suite.
 
-The recommended workflow for development is to start the application through the terminal:
+### Permissions: one grant covers every job
 
-```bash
-python menubar.py
-```
-*(An icon will appear in the top-right corner of your Mac).*
+macOS gives cron and launchd jobs no privacy permissions, so a job that touches iCloud Drive, Documents, external disks or other protected folders fails with `Operation not permitted`.
 
-### Generating the Executable (.app) for macOS
-
-If you want to turn CronBuddy into a native macOS app (without needing to open the terminal):
-
-1. Make sure you are inside the active virtual environment.
-2. Run the build command:
-
-```bash
-./build_app.sh
-```
-
-The app will be generated inside the `dist/CronBuddy.app` folder. You can drag it into your **Applications** folder and run it like any other Mac app.
-
-#### Test Mode
-If you want to validate a command quickly, start the app with the test flag:
-
-```bash
-python menubar.py --test
-```
-This flag will add a special **"One Minute From Now (Test)"** option when choosing the time for a Cron Job. It will schedule the command to run exactly in the following minute!
-
-### Running Jobs with CronBuddy's Permissions (Full Disk Access)
-
-macOS does not give cron any privacy permission, so jobs that touch iCloud Drive, external disks or other protected folders fail with `Operation not permitted`. Tick **"Run through CronBuddy"** when creating or editing a job and CronBuddy runs the command itself, so a single permission covers every such job:
+CronBuddy runs every job through its own executable: launchd starts `CronBuddy.app` directly, and cron starts it with `open -a`. macOS then holds CronBuddy responsible for the job, so a single grant covers all of them:
 
 1. Open **System Settings → Privacy & Security → Full Disk Access** and add `CronBuddy.app`.
-2. Mark the job with **"Run through CronBuddy"**. Its card shows a **🛡 via CronBuddy** badge.
-3. Each run appends the job's output and exit code to `~/CronBuddyScripts/logs/cronbuddy_<job>_<date>.log`, visible in the Logs tab.
+2. That's it. Every job, current and future, inherits the permission.
 
-Under the hood the crontab line becomes `/usr/bin/open -g -W -n -a CronBuddy.app --args --run '<command>' --name '<job>'`. A rebuilt app gets a new signature, so grant Full Disk Access again after rebuilding.
+An ad-hoc signed build gets a new signature every time it's rebuilt, which resets the grant. To keep it across updates, sign with a stable identity:
 
-### Directory Structure
+```bash
+CODESIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)" make install
+```
 
-CronBuddy organizes files in two main locations:
+### Where things live
 
-1. **Project Repository:** Where the source code lives. Here you will also find the `templates/` folder with useful native scripts (`.sh`, `.py`).
-2. **User Directory (`~/CronBuddyScripts`):** The folder in your user's home directory, with proper separations (`/shell`, `/python`, `/logs`) used to ensure none of your scripts are deleted by mistake or mixed with the root code.
+| What | Where |
+| --- | --- |
+| Job definitions | `~/Library/Application Support/CronBuddy/jobs.json` |
+| Generated action scripts | `~/Library/Application Support/CronBuddy/actions/` |
+| Run logs and history | `~/Library/Logs/CronBuddy/<job id>/` |
+| launchd agents | `~/Library/LaunchAgents/com.lucasrafaldini.cronbuddy.job.*.plist` |
+| cron entries | lines in your crontab ending in `# cronbuddy:<job id>` |
 
-### Main Libraries Used
-- `python-crontab`: To interact with the Unix/Mac native cron scheduler.
-- `CustomTkinter`: Modern, dark-mode native Graphical User Interface.
-- `rumps`: Flawless integration with the macOS top menu bar in very few lines of code.
+CronBuddy only touches crontab lines carrying its own marker. Your other entries are left as they are.
+
+### Upgrading from CronBuddy 1.x
+
+Crontab lines written by 1.x (`open -a CronBuddy.app --args --run '<command>' --name '<job>'`) keep working: version 2 understands that format and logs those runs to `~/CronBuddyScripts/logs` as before. They also appear under **Import from crontab**, labelled *CronBuddy 1.x*, so you can move them to the new history and logs when you're ready.
 
 ---
 
 <a id="português"></a>
 ## Português
 
-O **CronBuddy** é um gerenciador moderno e nativo de `cron jobs` para macOS, construído inteiramente em Python. Diferente das soluções tradicionais de terminal, o CronBuddy oferece uma interface gráfica minimalista (com suporte a Dark Mode nativo), integração direta à barra de menus (Menu Bar) do Mac, e um gerenciador de arquivos embutido para lidar facilmente com logs, scripts e templates de comandos.
+**CronBuddy** é um app nativo de barra de menus do macOS para agendar tarefas no Mac: comandos de shell, scripts, AppleScripts, fluxos do Automator e Atalhos. Mostra o que roda a seguir, guarda a saída completa de cada execução e avisa quando algo falha.
 
-### Funcionalidades
+A versão 2 foi reescrita em Swift e SwiftUI e substitui o app original em Python.
 
-- **Gerenciador Visual de Cron:** Visualize todos os seus agendamentos ativos e inativos em cards modernos e estilosos.
-- **Ícone na Barra de Menus (Menu Bar):** O aplicativo roda silenciosamente no topo da sua tela, utilizando a biblioteca `rumps` focada no ecossistema Apple.
-- **Agendamentos Intuitivos:** Em vez de tentar lembrar a sintaxe do cron (`* * * * *`), a interface oferece caixas de seleção como "Every Day at Midnight", que traduzem a sua vontade em código automaticamente.
-- **Templates Dinâmicos:** A pasta `templates/` no projeto serve como uma galeria de opções de comandos úteis (ex: Limpar a lixeira, Ping, Verificar Logs de CPU). Adicione seus scripts lá e a interface absorverá o template na hora.
-- **File Manager Multi-Abas:** Com apenas um clique, visualize, crie, delete e edite scripts criados por você na sua pasta local. Contempla abas exclusivas para:
-  - Scripts em Shell (`~/CronBuddyScripts/shell`)
-  - Scripts em Python (`~/CronBuddyScripts/python`)
-  - Logs de execução (`~/CronBuddyScripts/logs`)
-  - Seus Templates Personalizados (`/templates`)
-- **Iniciar com o macOS (Autostart):** Habilite ou desabilite o início automático do CronBuddy com o login do sistema diretamente a partir de um checkbox moderno na barra lateral.
+### Recursos
 
-### Pré-requisitos e Instalação
+- **Barra de menus em primeiro lugar:** próximas execuções, último resultado de cada job e botões para rodar ou pausar sem abrir janela. Contagem regressiva opcional até a próxima execução.
+- **Quatro tipos de ação:** comando de shell, arquivo de script (shell, Python, Ruby, AppleScript `.scpt`, JavaScript para Automação, `.workflow` do Automator), AppleScript inline ou qualquer atalho do app Atalhos.
+- **Agendamento em linguagem natural:** a cada N minutos ou horas, de hora em hora, diário em vários horários, dias da semana, dias do mês, no login ou expressão cron. O editor mostra as próximas execuções enquanto você edita.
+- **launchd ou cron:** launchd é o padrão (nativo do macOS, recupera execuções perdidas enquanto o Mac dormia); cron continua disponível.
+- **Teste antes de salvar:** o *Test Run* do editor executa a ação exatamente como escrita e mostra a saída ao vivo.
+- **Histórico e logs:** toda execução, agendada ou manual, fica registrada com saída, código de saída e duração. Busca dentro dos logs, taxa de sucesso por job e a tela *Activity* com tudo.
+- **Notificações** quando uma execução falha (ou, opcionalmente, quando dá certo, com prévia da saída).
+- **Templates:** vinte jobs prontos, incluindo cotação do dólar, SELIC/CDI/IPCA, clima, backups, checagem de site no ar e lembretes de pausa.
+- **Importar do crontab:** entradas existentes viram jobs gerenciados com um clique.
+- **Temas:** Sistema, Thoth (preto e dourado), Paper, Phosphor e Nord.
 
-1. Certifique-se de ter o Python 3 instalado no seu macOS. É recomendável utilizar um ambiente virtual (`venv`).
-2. Se o Python reclamar sobre não ter o pacote de interface (`_tkinter` missing), certifique-se de instalá-lo via Homebrew (ex: `brew install python-tk@3.14`).
-3. Clone este repositório e instale as dependências:
+### Instalação
+
+Requer macOS 14 ou superior e Xcode (ou o toolchain Swift 6).
 
 ```bash
 git clone https://github.com/lucasrafaldini/cronbuddy.git
 cd cronbuddy
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+make install
 ```
 
-### Como Executar (Desenvolvimento)
+### Permissões: uma autorização vale para todos os jobs
 
-O fluxo de trabalho recomendado para desenvolvimento é iniciar o aplicativo através do terminal:
+O macOS não dá permissões de privacidade a jobs do cron e do launchd, então jobs que mexem no iCloud Drive, em Documentos ou em discos externos falham com `Operation not permitted`. O CronBuddy executa cada job pelo próprio executável, então basta adicionar o `CronBuddy.app` em **Ajustes do Sistema → Privacidade e Segurança → Acesso Total ao Disco**. Builds com assinatura ad-hoc ganham uma assinatura nova a cada recompilação; para manter a permissão entre atualizações, assine com uma identidade fixa (`CODESIGN_IDENTITY=… make install`).
 
-```bash
-python menubar.py
-```
-*(Um ícone aparecerá no canto superior direito do seu Mac).*
+### Vindo do CronBuddy 1.x
 
-### Gerando o Executável (.app) para macOS
-
-Se você deseja transformar o CronBuddy em um aplicativo nativo do macOS (sem precisar abrir o terminal):
-
-1. Certifique-se de estar com o ambiente virtual ativo.
-2. Execute o comando de build:
-
-```bash
-./build_app.sh
-```
-
-O aplicativo será gerado na pasta `dist/CronBuddy.app`. Você pode arrastá-lo para sua pasta de **Aplicações** e executá-lo como qualquer outro app do Mac.
-
-#### Modo de Teste
-Se você quiser validar um comando rapidamente, inicie o app com a flag de teste:
-
-```bash
-python menubar.py --test
-```
-Essa flag adicionará uma opção especial **"One Minute From Now (Test)"** no momento em que você for escolher o horário de um Cron Job. Ela agendará o comando para rodar exatamente no minuto seguinte!
-
-### Executando Jobs com as Permissões do CronBuddy (Acesso Total ao Disco)
-
-O macOS não dá nenhuma permissão de privacidade ao cron, então jobs que mexem no iCloud Drive, em discos externos ou em outras pastas protegidas falham com `Operation not permitted`. Marque **"Run through CronBuddy"** ao criar ou editar um job e o próprio CronBuddy executa o comando, de modo que uma única permissão vale para todos esses jobs:
-
-1. Abra **Ajustes do Sistema → Privacidade e Segurança → Acesso Total ao Disco** e adicione o `CronBuddy.app`.
-2. Marque o job com **"Run through CronBuddy"**. O card dele mostra o selo **🛡 via CronBuddy**.
-3. Cada execução acrescenta a saída e o código de saída do job em `~/CronBuddyScripts/logs/cronbuddy_<job>_<data>.log`, visível na aba Logs.
-
-Por baixo dos panos, a linha do crontab vira `/usr/bin/open -g -W -n -a CronBuddy.app --args --run '<comando>' --name '<job>'`. Um app recompilado ganha uma assinatura nova, então conceda o Acesso Total ao Disco de novo depois de recompilar.
-
-### Estrutura de Diretórios
-
-O CronBuddy organiza arquivos em dois lugares principais:
-
-1. **Repositório do Projeto:** Onde o código-fonte mora. Aqui você também encontra a pasta `templates/` com scripts úteis nativos (`.sh`, `.py`).
-2. **Diretório do Usuário (`~/CronBuddyScripts`):** A pasta na home do seu usuário, com as devidas separações (`/shell`, `/python`, `/logs`) usada para garantir que nenhum script seu seja deletado por engano ou misturado com o código raiz.
-
-### Bibliotecas Principais Utilizadas
-- `python-crontab`: Para interagir com o agendador nativo do sistema Unix/Mac.
-- `CustomTkinter`: Interface gráfica de usuário moderna, dark-mode native.
-- `rumps`: Integração impecável da barra de menus superior do macOS em pouquíssimas linhas de código.
+Linhas do crontab criadas pela 1.x (`--run '<comando>' --name '<job>'`) continuam funcionando e registrando em `~/CronBuddyScripts/logs`. Elas também aparecem em **Import from crontab** com o selo *CronBuddy 1.x*, para migrar quando quiser.
 
 ---
 
 <a id="español"></a>
 ## Español
 
-**CronBuddy** es un gestor moderno y nativo de `cron jobs` para macOS, construido completamente en Python. A diferencia de las soluciones tradicionales de terminal, CronBuddy ofrece una interfaz gráfica minimalista (con soporte para Dark Mode nativo), integración directa en la barra de menús (Menu Bar) de Mac, y un administrador de archivos incorporado para manejar fácilmente registros, scripts y plantillas de comandos.
+**CronBuddy** es una app nativa de barra de menús de macOS para programar tareas en tu Mac: comandos de shell, scripts, AppleScripts, flujos de Automator y Atajos. Muestra lo que se ejecuta a continuación, guarda la salida completa de cada ejecución y avisa cuando algo falla.
 
-### Funcionalidades
+La versión 2 está reescrita en Swift y SwiftUI y reemplaza la app original en Python.
 
-- **Gestor Visual de Cron:** Visualiza todas tus tareas programadas activas e inactivas en tarjetas modernas y elegantes.
-- **Icono en la Barra de Menús (Menu Bar):** La aplicación se ejecuta silenciosamente en la parte superior de tu pantalla, utilizando la biblioteca `rumps` enfocada en el ecosistema de Apple.
-- **Programación Intuitiva:** En lugar de intentar recordar la sintaxis de cron (`* * * * *`), la interfaz ofrece cuadros de selección como "Every Day at Midnight", que traducen tu voluntad a código automáticamente.
-- **Plantillas Dinámicas:** La carpeta `templates/` en el proyecto sirve como una galería de opciones de comandos útiles (ej: Limpiar la papelera, Ping, Verificar registros de CPU). Agrega tus scripts allí y la interfaz absorberá la plantilla al instante.
-- **Administrador de Archivos Multi-Pestaña:** Con solo un clic, visualiza, crea, elimina y edita scripts creados por ti en tu carpeta local. Incluye pestañas exclusivas para:
-  - Scripts en Shell (`~/CronBuddyScripts/shell`)
-  - Scripts en Python (`~/CronBuddyScripts/python`)
-  - Registros de Ejecución (`~/CronBuddyScripts/logs`)
-  - Tus Plantillas Personalizadas (`/templates`)
-- **Iniciar con macOS (Autostart):** Activa o desactiva el inicio automático de CronBuddy al iniciar sesión en el sistema directamente a través de una moderna casilla de verificación en la barra lateral.
+### Funciones
 
-### Requisitos Previos e Instalación
+- **Barra de menús primero:** próximas ejecuciones, último resultado de cada job y botones para ejecutar o pausar sin abrir ventanas.
+- **Cuatro tipos de acción:** comando de shell, archivo de script, AppleScript o cualquier atajo de la app Atajos.
+- **Programación en lenguaje natural:** cada N minutos u horas, diaria en varios horarios, días de la semana o del mes, al iniciar sesión o expresión cron, con vista previa de las próximas ejecuciones.
+- **launchd o cron**, prueba en vivo antes de guardar, historial con salida y código de salida, notificaciones de fallos, veinte plantillas, importación desde crontab y cinco temas.
 
-1. Asegúrate de tener Python 3 instalado en tu macOS. Se recomienda utilizar un entorno virtual (`venv`).
-2. Si Python se queja de la falta del paquete de interfaz (`_tkinter` missing), asegúrate de instalarlo a través de Homebrew (ej: `brew install python-tk@3.14`).
-3. Clona este repositorio e instala las dependencias:
+### Instalación
+
+Requiere macOS 14 o posterior y Xcode (o el toolchain de Swift 6).
 
 ```bash
 git clone https://github.com/lucasrafaldini/cronbuddy.git
 cd cronbuddy
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+make install
 ```
 
-### Cómo Ejecutar (Desarrollo)
+### Permisos
 
-El flujo de trabajo recomendado para el desarrollo es iniciar la aplicación a través de la terminal:
+CronBuddy ejecuta cada job a través de su propio ejecutable, así que basta con añadir `CronBuddy.app` en **Ajustes del Sistema → Privacidad y Seguridad → Acceso Total al Disco** para que todos los jobs puedan acceder a carpetas protegidas. Las líneas de crontab de la versión 1.x siguen funcionando y pueden importarse desde **Import from crontab**.
 
-```bash
-python menubar.py
-```
-*(Aparecerá un icono en la esquina superior derecha de tu Mac).*
+---
 
-### Generando el Ejecutable (.app) para macOS
-
-Si deseas transformar CronBuddy en una aplicación nativa de macOS (sin necesidad de abrir la terminal):
-
-1. Asegúrate de estar dentro del entorno virtual activo.
-2. Ejecuta el comando de compilación:
-
-```bash
-./build_app.sh
-```
-
-La aplicación se generará en la carpeta `dist/CronBuddy.app`. Puedes arrastrarla a tu carpeta de **Aplicaciones** y ejecutarla como cualquier otra aplicación de Mac.
-
-#### Modo de Prueba
-Si deseas validar un comando rápidamente, inicia la aplicación con la bandera de prueba:
-
-```bash
-python menubar.py --test
-```
-¡Esta bandera agregará una opción especial **"One Minute From Now (Test)"** al momento de elegir el horario de un Cron Job. Programará el comando para ejecutarse exactamente en el minuto siguiente!
-
-### Ejecutando Jobs con los Permisos de CronBuddy (Acceso Total al Disco)
-
-macOS no le da ningún permiso de privacidad a cron, así que los jobs que tocan iCloud Drive, discos externos u otras carpetas protegidas fallan con `Operation not permitted`. Marca **"Run through CronBuddy"** al crear o editar un job y el propio CronBuddy ejecuta el comando, de modo que un único permiso cubre todos esos jobs:
-
-1. Abre **Ajustes del Sistema → Privacidad y Seguridad → Acceso Total al Disco** y añade `CronBuddy.app`.
-2. Marca el job con **"Run through CronBuddy"**. Su tarjeta muestra la insignia **🛡 via CronBuddy**.
-3. Cada ejecución añade la salida y el código de salida del job en `~/CronBuddyScripts/logs/cronbuddy_<job>_<fecha>.log`, visible en la pestaña Logs.
-
-Por debajo, la línea del crontab se convierte en `/usr/bin/open -g -W -n -a CronBuddy.app --args --run '<comando>' --name '<job>'`. Una app recompilada recibe una firma nueva, así que concede el Acceso Total al Disco de nuevo después de recompilar.
-
-### Estructura de Directorios
-
-CronBuddy organiza los archivos en dos lugares principales:
-
-1. **Repositorio del Proyecto:** Donde vive el código fuente. Aquí también encontrarás la carpeta `templates/` con scripts nativos útiles (`.sh`, `.py`).
-2. **Directorio del Usuario (`~/CronBuddyScripts`):** La carpeta en el inicio de tu usuario, con las debidas separaciones (`/shell`, `/python`, `/logs`) utilizada para asegurar que ninguno de tus scripts se elimine por error o se mezcle con el código raíz.
-
-### Principales Bibliotecas Utilizadas
-- `python-crontab`: Para interactuar con el programador nativo del sistema Unix/Mac.
-- `CustomTkinter`: Interfaz gráfica de usuario moderna y nativa en modo oscuro.
-- `rumps`: Integración impecable con la barra de menús superior de macOS en muy pocas líneas de código.
+MIT License.
