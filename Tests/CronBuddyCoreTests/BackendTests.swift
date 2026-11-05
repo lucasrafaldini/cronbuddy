@@ -19,7 +19,7 @@ private let paths = Paths(home: URL(fileURLWithPath: "/Users/test"))
         #expect(merged == """
         MAILTO=""
         0 5 * * * /usr/local/bin/mine
-        0 21 * * * '/Users/test/Library/Application Support/CronBuddy/bin/cb-run' abc123 # cronbuddy:abc123
+        0 21 * * * /bin/launchctl kickstart gui/\(getuid())/com.lucasrafaldini.cronbuddy.job.abc123 # cronbuddy:abc123
 
         """)
     }
@@ -151,9 +151,17 @@ private let paths = Paths(home: URL(fileURLWithPath: "/Users/test"))
     let job = Job(id: "abc123", name: "Sync", action: .shell(command: "true"),
                   schedule: .hourly(minute: 0), backend: .cron)
 
-    @Test func appLauncherGoesThroughLaunchServicesForCron() {
-        let line = CrontabBackend.lines(for: job, paths: paths, launcher: .app(path: "/Applications/CronBuddy.app"))
-        #expect(line == ["0 * * * * /usr/bin/open -g -W -n -a '/Applications/CronBuddy.app' --args --run-job abc123 # cronbuddy:abc123"])
+    @Test func cronKickstartsTheJobsLaunchAgent() throws {
+        let line = CrontabBackend.lines(for: job, paths: paths)
+        #expect(line == ["0 * * * * /bin/launchctl kickstart gui/\(getuid())/com.lucasrafaldini.cronbuddy.job.abc123 # cronbuddy:abc123"])
+
+        // The agent itself has no trigger: cron owns the timing.
+        let data = try LaunchdBackend.plistData(for: job, paths: paths, launcher: .app(path: "/Applications/CronBuddy.app"))
+        let plist = try #require(try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any])
+        #expect(plist["StartCalendarInterval"] == nil)
+        #expect(plist["StartInterval"] == nil)
+        #expect(plist["RunAtLoad"] == nil)
+        #expect(plist["ProgramArguments"] as? [String] == ["/Applications/CronBuddy.app/Contents/MacOS/CronBuddy", "--run-job", "abc123"])
     }
 
     @Test func appLauncherRunsTheBinaryDirectlyForLaunchd() throws {

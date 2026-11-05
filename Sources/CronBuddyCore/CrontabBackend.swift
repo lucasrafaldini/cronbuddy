@@ -29,31 +29,31 @@ public enum CrontabBackend {
         }
     }
 
-    public static func lines(for job: Job, paths: Paths, launcher: Launcher = .wrapper) -> [String] {
+    public static func lines(for job: Job, paths: Paths) -> [String] {
         guard job.backend == .cron, job.isEnabled, let expressions = job.schedule.cronExpressions() else {
             return []
         }
-        let command = launcher.cronCommand(jobID: job.id, paths: paths)
+        let command = Launcher.cronCommand(jobID: job.id, paths: paths)
         return expressions.map { "\($0) \(command) \(marker)\(job.id)" }
     }
 
     /// Replaces every CronBuddy-managed line, leaving the user's own entries untouched.
-    public static func merged(existing: String, jobs: [Job], paths: Paths, launcher: Launcher = .wrapper) -> String {
+    public static func merged(existing: String, jobs: [Job], paths: Paths) -> String {
         var kept = existing
             .components(separatedBy: "\n")
             .filter { !$0.contains(marker) }
         while let last = kept.last, last.trimmingCharacters(in: .whitespaces).isEmpty {
             kept.removeLast()
         }
-        let managed = jobs.flatMap { lines(for: $0, paths: paths, launcher: launcher) }
+        let managed = jobs.flatMap { lines(for: $0, paths: paths) }
         let all = kept + managed
         return all.isEmpty ? "" : all.joined(separator: "\n") + "\n"
     }
 
     /// Re-writes the crontab only when its managed section actually changes.
-    public static func sync(jobs: [Job], paths: Paths, launcher: Launcher = .wrapper) throws {
+    public static func sync(jobs: [Job], paths: Paths) throws {
         let existing = try read()
-        let updated = merged(existing: existing, jobs: jobs, paths: paths, launcher: launcher)
+        let updated = merged(existing: existing, jobs: jobs, paths: paths)
         // Never rewrite the crontab over trailing whitespace alone.
         if updated.trimmingCharacters(in: .whitespacesAndNewlines) != existing.trimmingCharacters(in: .whitespacesAndNewlines) {
             try write(updated)

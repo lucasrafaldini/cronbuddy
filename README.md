@@ -48,7 +48,7 @@ make install
 
 macOS gives cron and launchd jobs no privacy permissions, so a job that touches iCloud Drive, Documents, external disks or other protected folders fails with `Operation not permitted`.
 
-CronBuddy runs every job through its own executable: launchd starts `CronBuddy.app` directly, and cron starts it with `open -a`. macOS then holds CronBuddy responsible for the job, so a single grant covers all of them:
+CronBuddy runs every job through its own executable. launchd jobs start `CronBuddy.app` directly; cron jobs keep cron's timing, and their crontab line asks launchd to start the same executable. macOS then holds CronBuddy responsible for every job, so a single grant covers all of them:
 
 1. Open **System Settings → Privacy & Security → Full Disk Access** and add `CronBuddy.app`.
 2. That's it. Every job, current and future, inherits the permission.
@@ -73,7 +73,7 @@ CronBuddy only touches crontab lines carrying its own marker. Your other entries
 
 ### Upgrading from CronBuddy 1.x
 
-Crontab lines written by 1.x (`open -a CronBuddy.app --args --run '<command>' --name '<job>'`) keep working: version 2 understands that format and logs those runs to `~/CronBuddyScripts/logs` as before. They also appear under **Import from crontab**, labelled *CronBuddy 1.x*, so you can move them to the new history and logs when you're ready.
+Crontab lines written by 1.x (`open -a CronBuddy.app --args --run '<command>' --name '<job>'`) keep working: version 2 understands that format and logs those runs to `~/CronBuddyScripts/logs` as before. They also appear under **Import from crontab**, labelled *CronBuddy 1.x*. Importing them is recommended: while a 1.x line is running, macOS treats it as the open app, so clicking CronBuddy won't show its window until the run ends.
 
 ---
 

@@ -3,12 +3,16 @@ import Foundation
 public enum LaunchdBackend {
     static var domain: String { "gui/\(getuid())" }
 
+    /// cron jobs get an agent with no trigger of its own; their crontab line kickstarts it.
     public static func plistData(for job: Job, paths: Paths, launcher: Launcher = .wrapper) throws -> Data {
         var plist: [String: Any] = [
             "Label": paths.launchdLabel(for: job.id),
             "ProgramArguments": launcher.programArguments(jobID: job.id, paths: paths),
             "ProcessType": "Background",
         ]
+        guard job.backend == .launchd else {
+            return try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)
+        }
         switch try job.schedule.launchdTrigger() {
         case .interval(let seconds):
             plist["StartInterval"] = seconds

@@ -144,10 +144,10 @@ private struct AdvancedSettings: View {
                     .foregroundStyle(theme.secondary)
             }
             Section("Permissions") {
-                LabeledContent("cron and protected folders") {
+                LabeledContent("Protected folders") {
                     Button("Open Full Disk Access") { Finder.openFullDiskAccessSettings() }
                 }
-                Text("cron jobs that touch Documents, Desktop or Downloads need /usr/sbin/cron in Full Disk Access. launchd jobs don’t.")
+                Text("Every job runs through CronBuddy, so adding CronBuddy to Full Disk Access once lets all of them reach iCloud Drive, Documents, external disks and other protected places.")
                     .font(.caption)
                     .foregroundStyle(theme.secondary)
             }

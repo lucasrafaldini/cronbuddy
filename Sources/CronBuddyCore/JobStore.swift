@@ -44,15 +44,14 @@ public struct JobStore: Sendable {
             try remove(fromBackendOf: previous, allJobs: allJobs)
         }
 
-        switch job.backend {
-        case .launchd:
-            if job.isEnabled {
-                try LaunchdBackend.install(job, paths: paths, launcher: launcher)
-            } else {
-                LaunchdBackend.uninstall(id: job.id, paths: paths)
-            }
-        case .cron:
-            try CrontabBackend.sync(jobs: allJobs, paths: paths, launcher: launcher)
+        // Every job has a launch agent: launchd jobs schedule through it, cron jobs are kickstarted into it.
+        if job.isEnabled {
+            try LaunchdBackend.install(job, paths: paths)
+        } else {
+            LaunchdBackend.uninstall(id: job.id, paths: paths)
+        }
+        if job.backend == .cron {
+            try CrontabBackend.sync(jobs: allJobs, paths: paths)
         }
     }
 
@@ -63,11 +62,9 @@ public struct JobStore: Sendable {
     }
 
     private func remove(fromBackendOf job: Job, allJobs: [Job]) throws {
-        switch job.backend {
-        case .launchd:
-            LaunchdBackend.uninstall(id: job.id, paths: paths)
-        case .cron:
-            try CrontabBackend.sync(jobs: allJobs.filter { $0.id != job.id }, paths: paths, launcher: launcher)
+        LaunchdBackend.uninstall(id: job.id, paths: paths)
+        if job.backend == .cron {
+            try CrontabBackend.sync(jobs: allJobs.filter { $0.id != job.id }, paths: paths)
         }
     }
 
@@ -88,12 +85,8 @@ public struct JobStore: Sendable {
         for job in jobs {
             do {
                 try ActionScript.write(job, to: paths.actionScript(for: job.id))
-                if job.backend == .launchd {
-                    if job.isEnabled {
-                        try LaunchdBackend.install(job, paths: paths, launcher: launcher)
-                    } else {
-                        LaunchdBackend.uninstall(id: job.id, paths: paths)
-                    }
+                if job.isEnabled {
+                    try LaunchdBackend.install(job, paths: paths, launcher: launcher)
                 } else if FileManager.default.fileExists(atPath: paths.plist(for: job.id).path) {
                     LaunchdBackend.uninstall(id: job.id, paths: paths)
                 }
@@ -103,7 +96,7 @@ public struct JobStore: Sendable {
         }
 
         do {
-            try CrontabBackend.sync(jobs: jobs, paths: paths, launcher: launcher)
+            try CrontabBackend.sync(jobs: jobs, paths: paths)
         } catch {
             failures.append(error.localizedDescription)
         }

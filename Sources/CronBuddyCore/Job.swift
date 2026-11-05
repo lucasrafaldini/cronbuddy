@@ -18,7 +18,7 @@ public enum Backend: String, Codable, CaseIterable, Identifiable, Sendable {
         case .launchd:
             "macOS-native scheduler. Catches up on runs missed while the Mac slept. Recommended."
         case .cron:
-            "Classic Unix crontab. Skips runs missed during sleep; may need Full Disk Access for protected folders."
+            "Classic Unix crontab timing. Runs missed while the Mac sleeps are skipped."
         }
     }
 }

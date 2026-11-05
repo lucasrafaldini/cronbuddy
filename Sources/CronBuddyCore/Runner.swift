@@ -19,14 +19,11 @@ public enum Launcher: Hashable, Sendable {
         }
     }
 
-    /// cron can't hand privacy permissions to a child, so go through LaunchServices instead.
-    func cronCommand(jobID: String, paths: Paths) -> String {
-        switch self {
-        case .wrapper:
-            "\(Shell.quote(paths.shim.path)) \(jobID)"
-        case .app(let path):
-            "/usr/bin/open -g -W -n -a \(Shell.quote(path)) --args \(Self.runJobFlag) \(jobID)"
-        }
+    /// cron decides when; launchd starts the job's agent. Running through launchd keeps
+    /// CronBuddy responsible for the job's permissions without going through LaunchServices,
+    /// which would treat the run as the app itself and swallow attempts to open the window.
+    static func cronCommand(jobID: String, paths: Paths) -> String {
+        "/bin/launchctl kickstart \(LaunchdBackend.domain)/\(paths.launchdLabel(for: jobID))"
     }
 }
 

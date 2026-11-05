@@ -23,7 +23,10 @@ dmg:
 
 install: app
 	rm -rf /Applications/CronBuddy.app
-	cp -R build/CronBuddy.app /Applications/
+	ditto --norsrc --noextattr --noqtn build/CronBuddy.app /Applications/CronBuddy.app
+	@# Builds on exFAT carry AppleDouble files that break the code signature.
+	find /Applications/CronBuddy.app -name '._*' -exec rm -rf {} +
+	codesign --verify --strict /Applications/CronBuddy.app
 	open /Applications/CronBuddy.app
 
 clean:
