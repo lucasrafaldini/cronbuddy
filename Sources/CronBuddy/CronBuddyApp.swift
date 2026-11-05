@@ -3,6 +3,7 @@ import SwiftUI
 
 extension Notification.Name {
     static let openMainWindow = Notification.Name("CronBuddyOpenMainWindow")
+    static let openSettingsWindow = Notification.Name("CronBuddyOpenSettings")
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {

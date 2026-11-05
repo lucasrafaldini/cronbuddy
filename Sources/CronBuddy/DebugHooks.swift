@@ -39,6 +39,8 @@ enum DebugHooks {
         case "resume": if let job = model.job(argument) { model.setEnabled(true, for: job) }
         case "menubar": showMenuPreview(model: model)
         case "menubar-close": preview?.close(); preview = nil
+        case "settings": NotificationCenter.default.post(name: .openSettingsWindow, object: nil)
+        case "close-settings": NSApp.windows.first { $0.identifier?.rawValue.contains("Settings") == true || $0.title.contains("Settings") || $0.title == "General" || $0.title == "Appearance" || $0.title == "Advanced" }?.close()
         case "snap": snapshot(name: argument, dir: dir)
         default: break
         }

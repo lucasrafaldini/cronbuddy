@@ -17,22 +17,25 @@
 
 **CronBuddy** is a native macOS menu bar app for scheduling things on your Mac: shell commands, scripts, AppleScripts, Automator workflows and Shortcuts. It shows what runs next, keeps the full output of every run, and tells you when something fails.
 
-Version 2 is a rewrite in Swift and SwiftUI. It replaces the original Python app.
+![CronBuddy overview](docs/screenshots/overview.png)
 
-### Features
+Version 2 is a rewrite in Swift and SwiftUI that replaces the original Python app. The design and engineering decisions behind it are in [docs/architecture.md](docs/architecture.md).
 
-- **Menu bar first.** See the next runs, each job's last result, and run or pause any job without opening a window. Optional countdown to the next run in the menu bar.
-- **Four kinds of action.** A shell command, a script file (shell, Python, Ruby, AppleScript `.scpt`, JavaScript for Automation, Automator `.workflow`), inline AppleScript, or any shortcut from the Shortcuts app.
-- **Schedules in plain language.** Every N minutes or hours, hourly, daily at several times, chosen weekdays, chosen days of the month, at login, or a raw cron expression. The editor previews the next runs as you type.
-- **launchd or cron.** launchd is the default: it's the macOS-native scheduler and catches up on runs missed while the Mac slept. cron is there when you want it.
-- **Test before saving.** *Test Run* in the editor runs the action exactly as written and streams its output live.
-- **History and logs.** Every run, scheduled or manual, is recorded with its output, exit code and duration. Search inside any log, see a job's success rate, or review every run in *Activity*.
-- **Notifications** when a run fails, or optionally when it succeeds, with a preview of its output.
-- **Templates.** Twenty ready-made jobs: disk reports, backups, uptime checks, Homebrew updates, weather, exchange rates, break reminders, Dark Mode in the evening and more.
-- **Import from crontab.** Existing crontab entries can be adopted with one click, gaining logs and history.
-- **Themes.** System, Thoth (black and gold), Paper, Phosphor and Nord.
+### Contents
 
-### Install
+1. [Install](#1-install)
+2. [The menu bar](#2-the-menu-bar)
+3. [Create a job](#3-create-a-job)
+4. [Test it, then watch it run](#4-test-it-then-watch-it-run)
+5. [History and logs](#5-history-and-logs)
+6. [Templates](#6-templates)
+7. [Bring over your crontab](#7-bring-over-your-crontab)
+8. [Settings and themes](#8-settings-and-themes)
+9. [Permissions: one grant covers every job](#9-permissions-one-grant-covers-every-job)
+10. [Where things live](#10-where-things-live)
+11. [Upgrading from 1.x](#11-upgrading-from-1x)
+
+### 1. Install
 
 Requires macOS 14 or later and Xcode (or the Swift 6 toolchain).
 
@@ -44,7 +47,74 @@ make install
 
 `make install` builds `CronBuddy.app` and copies it to `/Applications`. Use `make app` to only build it into `build/`, `make dmg` for a disk image, and `make test` to run the test suite.
 
-### Permissions: one grant covers every job
+On first launch CronBuddy opens its window once, then lives in the menu bar. Opening the app again from Finder or Spotlight brings the window back.
+
+### 2. The menu bar
+
+Click the clock to see what runs next and how every job did last time. Hover a job to run it now or pause it; click it to open its details. The menu bar can also show a countdown to the next run, and the icon changes when a job is running or its last run failed.
+
+| System | Thoth theme |
+| --- | --- |
+| <img src="docs/screenshots/menubar.png" alt="Menu bar" width="360"> | <img src="docs/screenshots/menubar-thoth.png" alt="Menu bar, Thoth theme" width="360"> |
+
+### 3. Create a job
+
+Press **+** (or ⌘N). A job is a name, an action and a schedule:
+
+- **Action:** a shell command, a script file (shell, Python, Ruby, AppleScript, JavaScript for Automation or an Automator `.workflow`), inline AppleScript, or one of your Shortcuts.
+- **Schedule:** every N minutes or hours, hourly, daily at one or more times, on chosen weekdays, on chosen days of the month, at login, or a raw cron expression. The next runs are previewed as you edit.
+- **Runs with:** launchd (recommended: it catches up on runs missed while the Mac slept) or cron.
+- **Environment** variables, and whether to notify on failure or success.
+
+| A command from a template | An AppleScript |
+| --- | --- |
+| ![Editor](docs/screenshots/editor.png) | ![Editor with AppleScript](docs/screenshots/editor-applescript.png) |
+
+The **Create Job** button stays disabled until the job is valid, and the editor explains what's missing, for example an interval that cron can't express.
+
+### 4. Test it, then watch it run
+
+**Test Run** in the editor runs the action exactly as written, before saving, and streams its output. On a saved job, **Run Now** (⌘R) does the same and records the run in its history.
+
+![Run Now with live output](docs/screenshots/run-now.png)
+
+### 5. History and logs
+
+Every run, scheduled or manual, is recorded with its full output, exit code and duration. A job's page shows its next runs, success rate, a strip of recent run times, and its history with a searchable log viewer.
+
+![A job's history](docs/screenshots/job-history.png)
+
+**Activity** lists every run of every job, newest first, and can filter to failures.
+
+![Activity](docs/screenshots/activity.png)
+
+### 6. Templates
+
+Twenty ready-made jobs, from disk reports and backups to uptime checks, Homebrew updates, exchange rates, break reminders and Dark Mode in the evening. Each opens in the editor first, so you can adjust it before saving.
+
+![Templates](docs/screenshots/templates.png)
+
+### 7. Bring over your crontab
+
+**Import from crontab** lists entries already in your crontab that CronBuddy doesn't manage. Importing one replaces the line with a managed equivalent, on the same schedule, now with logs and history. CronBuddy never changes crontab lines it doesn't own.
+
+![Import from crontab](docs/screenshots/import.png)
+
+### 8. Settings and themes
+
+Settings (⌘,) has *open at login*, the menu bar countdown, how many runs to keep per job, the folders CronBuddy uses, and a *Reinstall every job* button for moving to a new Mac.
+
+<img src="docs/screenshots/settings.png" alt="Settings" width="560">
+
+Five themes: System, Thoth (black and gold, in serif), Paper, Nord and Phosphor.
+
+| Thoth | Paper |
+| --- | --- |
+| ![Thoth](docs/screenshots/theme-thoth.png) | ![Paper](docs/screenshots/theme-paper.png) |
+| **Nord** | **Phosphor** |
+| ![Nord](docs/screenshots/theme-nord.png) | ![Phosphor](docs/screenshots/theme-phosphor.png) |
+
+### 9. Permissions: one grant covers every job
 
 macOS gives cron and launchd jobs no privacy permissions, so a job that touches iCloud Drive, Documents, external disks or other protected folders fails with `Operation not permitted`.
 
@@ -59,19 +129,17 @@ An ad-hoc signed build gets a new signature every time it's rebuilt, which reset
 CODESIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)" make install
 ```
 
-### Where things live
+### 10. Where things live
 
 | What | Where |
 | --- | --- |
 | Job definitions | `~/Library/Application Support/CronBuddy/jobs.json` |
 | Generated action scripts | `~/Library/Application Support/CronBuddy/actions/` |
 | Run logs and history | `~/Library/Logs/CronBuddy/<job id>/` |
-| launchd agents | `~/Library/LaunchAgents/com.lucasrafaldini.cronbuddy.job.*.plist` |
+| Launch agents (every job) | `~/Library/LaunchAgents/com.lucasrafaldini.cronbuddy.job.*.plist` |
 | cron entries | lines in your crontab ending in `# cronbuddy:<job id>` |
 
-CronBuddy only touches crontab lines carrying its own marker. Your other entries are left as they are.
-
-### Upgrading from CronBuddy 1.x
+### 11. Upgrading from 1.x
 
 Crontab lines written by 1.x (`open -a CronBuddy.app --args --run '<command>' --name '<job>'`) keep working: version 2 understands that format and logs those runs to `~/CronBuddyScripts/logs` as before. They also appear under **Import from crontab**, labelled *CronBuddy 1.x*. Importing them is recommended: while a 1.x line is running, macOS treats it as the open app, so clicking CronBuddy won't show its window until the run ends.
 

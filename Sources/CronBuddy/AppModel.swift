@@ -73,8 +73,21 @@ final class AppModel {
         set { UserDefaults.standard.set(newValue, forKey: "logRetention") }
     }
 
+    /// Debug builds started with CRONBUDDY_HOME run against a throwaway home and never touch
+    /// the real crontab or launchd. Used to produce documentation screenshots.
+    private let sandboxed: Bool
+
     init(paths: Paths = .standard) {
+        var paths = paths
+        var sandboxed = false
+        #if DEBUG
+        if let home = ProcessInfo.processInfo.environment["CRONBUDDY_HOME"] {
+            paths = Paths(home: URL(fileURLWithPath: home, isDirectory: true))
+            sandboxed = true
+        }
+        #endif
         self.paths = paths
+        self.sandboxed = sandboxed
         let launcher: Launcher = AppBundle.isBundled ? .app(path: Bundle.main.bundlePath) : .wrapper
         self.store = JobStore(paths: paths, launcher: launcher)
 
@@ -88,14 +101,14 @@ final class AppModel {
 
         let snapshot = jobs
         let store = store
-        Task.detached(priority: .utility) {
+        if !sandboxed { Task.detached(priority: .utility) {
             let failures = store.reconcile(snapshot)
             if !failures.isEmpty {
                 await MainActor.run { [weak self] in
                     self?.alertMessage = "Some jobs couldn’t be installed:\n" + failures.joined(separator: "\n")
                 }
             }
-        }
+        } }
 
         let timer = Timer(timeInterval: 3, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
@@ -175,6 +188,7 @@ final class AppModel {
             jobs.append(job)
         }
         persist()
+        if sandboxed { return }
         perform("Couldn’t install “\(job.name)”") {
             try store.apply(job, allJobs: jobs, previous: previous)
         }
@@ -193,6 +207,7 @@ final class AppModel {
         sessions[job.id] = nil
         if selection == .job(job.id) { selection = .overview }
         persist()
+        if sandboxed { return }
         perform("Couldn’t remove “\(job.name)”") {
             try store.delete(job, remaining: jobs)
         }
@@ -240,8 +255,10 @@ final class AppModel {
             ?? String(entry.command.split(separator: "/").last?.prefix(40) ?? "Imported job")
         let job = Job(name: name, action: .shell(command: entry.command), schedule: schedule, backend: .cron)
         do {
-            let text = try CrontabBackend.read()
-            try CrontabBackend.write(CrontabBackend.removing(entry, from: text))
+            if !sandboxed {
+                let text = try CrontabBackend.read()
+                try CrontabBackend.write(CrontabBackend.removing(entry, from: text))
+            }
         } catch {
             alertMessage = "Couldn’t import that crontab entry.\n\(error.localizedDescription)"
             return
@@ -252,6 +269,7 @@ final class AppModel {
     }
 
     func reinstallAll() {
+        if sandboxed { return }
         let failures = store.reconcile(jobs)
         alertMessage = failures.isEmpty ? nil : failures.joined(separator: "\n")
     }
@@ -304,9 +322,16 @@ final class AppModel {
 
     func refreshExternal() {
         externalCheckedAt = Date()
-        let entries = (try? CrontabBackend.externalEntries(in: CrontabBackend.read())) ?? []
+        let text = sandboxed ? Self.sampleCrontab : ((try? CrontabBackend.read()) ?? "")
+        let entries = CrontabBackend.externalEntries(in: text)
         if entries != externalEntries { externalEntries = entries }
     }
+
+    private static let sampleCrontab = """
+    MAILTO=""
+    30 2 * * 0 /opt/homebrew/bin/brew cleanup -s # Weekly Homebrew cleanup
+    */10 * * * * $HOME/bin/sync-notes.sh
+    """
 
     // MARK: Helpers
 

@@ -5,6 +5,7 @@ import SwiftUI
 struct MenuBarLabel: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.openSettings) private var openSettings
     @AppStorage("showCountdown") private var showCountdown = true
     @AppStorage("didOnboard") private var didOnboard = false
 
@@ -19,6 +20,10 @@ struct MenuBarLabel: View {
         .accessibilityLabel("CronBuddy")
         // The label is the only view alive at launch, so it owns window requests.
         .onReceive(NotificationCenter.default.publisher(for: .openMainWindow)) { _ in showMainWindow() }
+        .onReceive(NotificationCenter.default.publisher(for: .openSettingsWindow)) { _ in
+            NSApp.activate()
+            openSettings()
+        }
         .task {
             if !didOnboard {
                 didOnboard = true
