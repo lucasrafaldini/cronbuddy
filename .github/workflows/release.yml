@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Test
+        run: swift test
+
+      - name: Build a universal app and disk image
+        run: |
+          echo "${GITHUB_REF_NAME#v}" > VERSION
+          UNIVERSAL=1 DMG=1 scripts/build-app.sh
+          lipo -archs build/CronBuddy.app/Contents/MacOS/CronBuddy
+          cd build
+          ditto -c -k --keepParent CronBuddy.app "CronBuddy-$(cat ../VERSION).zip"
+          shasum -a 256 CronBuddy-*.dmg CronBuddy-*.zip > checksums.txt
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          cat > notes.md <<EOF
+          Native macOS menu bar app for Apple silicon and Intel, macOS 14 or later.
+
+          **Install:** open \`CronBuddy-${version}.dmg\` and drag CronBuddy to Applications.
+
+          The app isn't notarized by Apple yet, so the first launch is blocked. Open it once from **System Settings › Privacy & Security › Open Anyway**, or run:
+
+          \`\`\`
+          xattr -dr com.apple.quarantine /Applications/CronBuddy.app
+          \`\`\`
+
+          See the [changelog](https://github.com/${GITHUB_REPOSITORY}/blob/main/CHANGELOG.md) for what's new.
+          EOF
+          gh release create "$GITHUB_REF_NAME" build/CronBuddy-*.dmg build/CronBuddy-*.zip build/checksums.txt \
+            --title "CronBuddy ${version}" --notes-file notes.md

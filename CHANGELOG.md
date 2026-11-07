@@ -22,7 +22,7 @@ CronBuddy is now a native Swift and SwiftUI app. The Python implementation is re
 - **Test Run** in the editor with live output, and **Run Now** with live output on every job.
 - **Run history**: output, exit code and duration for every run, log search, per-job success rate, and an *Activity* view across all jobs.
 - **Notifications** on failure, or on success with an output preview.
-- **Twenty templates**, many ported from Khronos, plus **Import from crontab**.
+- **Twenty templates** and **Import from crontab**.
 - **Themes**: System, Thoth, Paper, Phosphor and Nord.
 - Every job runs through CronBuddy's own executable, so one Full Disk Access grant covers them all. Lines written by 1.x (`--run … --name …`) keep working and can be imported.
 
@@ -54,7 +54,7 @@ O CronBuddy agora é um app nativo em Swift e SwiftUI. A implementação em Pyth
 - **Test Run** no editor e **Run Now** em cada job, com saída ao vivo.
 - **Histórico**: saída, código de saída e duração de cada execução, busca nos logs, taxa de sucesso e a tela *Activity*.
 - **Notificações** de falha, ou de sucesso com prévia da saída.
-- **Vinte templates**, muitos vindos do Khronos, e **Import from crontab**.
+- **Vinte templates** e **Import from crontab**.
 - **Temas**: Sistema, Thoth, Paper, Phosphor e Nord.
 - Todo job roda pelo executável do CronBuddy, então uma única permissão de Acesso Total ao Disco vale para todos. Linhas criadas pela 1.x (`--run … --name …`) continuam funcionando e podem ser importadas.
 
