@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file.
 ---
 
 <a id="english"></a>
+## [2.1.0] - Liquid Glass
+
+### Added
+- **Liquid Glass theme**: cards, panels and the menu bar's groups are Liquid Glass on macOS 26, over a translucent window with a wash of the accent color; prominent buttons use glass. Follows light and dark. Earlier macOS versions get blur materials.
+
 ## [2.0.0] - Native rewrite
 
 CronBuddy is now a native Swift and SwiftUI app. The Python implementation is retired.
@@ -43,6 +48,11 @@ CronBuddy is now a native Swift and SwiftUI app. The Python implementation is re
 ---
 
 <a id="português"></a>
+## [2.1.0] - Liquid Glass
+
+### Adicionado
+- **Tema Liquid Glass**: cartões, painéis e os grupos da barra de menus em Liquid Glass no macOS 26, sobre uma janela translúcida com um véu da cor de destaque; botões principais em vidro. Acompanha claro e escuro. Versões anteriores do macOS usam materiais com desfoque.
+
 ## [2.0.0] - Reescrita nativa
 
 O CronBuddy agora é um app nativo em Swift e SwiftUI. A implementação em Python foi aposentada.
@@ -75,6 +85,11 @@ O CronBuddy agora é um app nativo em Swift e SwiftUI. A implementação em Pyth
 ---
 
 <a id="español"></a>
+## [2.1.0] - Liquid Glass
+
+### Añadido
+- **Tema Liquid Glass**: tarjetas, paneles y los grupos de la barra de menús en Liquid Glass en macOS 26, sobre una ventana translúcida con un velo del color de acento. Sigue el modo claro y oscuro.
+
 ## [2.0.0] - Reescritura nativa
 
 CronBuddy ahora es una app nativa en Swift y SwiftUI. La implementación en Python queda retirada.

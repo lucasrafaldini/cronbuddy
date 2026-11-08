@@ -75,7 +75,7 @@ struct MenuBarView: View {
                 .frame(height: 260)
             } else {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 14) {
+                    VStack(alignment: .leading, spacing: theme.isGlass ? 10 : 14) {
                         upNext
                         jobsList
                     }
@@ -89,7 +89,7 @@ struct MenuBarView: View {
             footer
         }
         .frame(width: 380)
-        .background(theme.isNative ? Color.clear : theme.background)
+        .windowBackground(theme, backdrop: false)
     }
 
     private var header: some View {
@@ -154,6 +154,7 @@ struct MenuBarView: View {
                     .font(.callout)
                 }
             }
+            .glassPlatter(theme)
         }
     }
 
@@ -164,6 +165,7 @@ struct MenuBarView: View {
                 MenuJobRow(job: job) { open(.job(job.id)) }
             }
         }
+        .glassPlatter(theme)
     }
 
     private func caption(_ text: String) -> some View {
@@ -272,8 +274,7 @@ private struct MenuJobRow: View {
             Image(systemName: symbol)
                 .font(.caption)
                 .frame(width: 22, height: 22)
-                .background(theme.surface, in: Circle())
-                .overlay(Circle().strokeBorder(theme.border))
+                .surface(theme, in: Circle(), interactive: true)
         }
         .buttonStyle(.plain)
         .help(help)

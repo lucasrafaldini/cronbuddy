@@ -52,8 +52,7 @@ struct TemplatesView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .foregroundStyle(selected ? theme.onAccent : theme.text)
-                .background(selected ? theme.accent : theme.surface, in: Capsule())
-                .overlay(Capsule().strokeBorder(theme.border))
+                .surface(theme, in: Capsule(), tint: selected ? theme.accent : nil, interactive: true)
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(selected ? .isSelected : [])
@@ -97,14 +96,14 @@ private struct TemplateCard: View {
             Button(action: onUse) {
                 Text("Use Template").frame(maxWidth: .infinity)
             }
-            .buttonStyle(.bordered)
+            .secondaryButton(theme)
         }
         .padding(16)
         .frame(maxWidth: .infinity, minHeight: 210, alignment: .topLeading)
-        .background(theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .surface(theme, in: RoundedRectangle(cornerRadius: theme.isGlass ? 20 : 14, style: .continuous), bordered: false)
         .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(hovering ? theme.accent.opacity(0.6) : theme.border)
+            RoundedRectangle(cornerRadius: theme.isGlass ? 20 : 14, style: .continuous)
+                .strokeBorder(hovering ? theme.accent.opacity(0.6) : (theme.isGlass ? .clear : theme.border))
         )
         .scaleEffect(hovering ? 1.01 : 1)
         .animation(.easeOut(duration: 0.15), value: hovering)
