@@ -52,11 +52,8 @@ struct MainWindow: View {
         .toolbarBackground(theme.usesNativeChrome ? .automatic : .visible, for: .windowToolbar)
         .frame(minWidth: 860, minHeight: 560)
         .onAppear {
-            NSApp.setActivationPolicy(.regular)
-            NSApp.activate()
-        }
-        .onDisappear {
-            NSApp.setActivationPolicy(.accessory)
+            // Also covers windows macOS restores or reopens without going through the menu bar.
+            if NSApp.activationPolicy() != .regular { AppPresence.show() }
         }
     }
 }

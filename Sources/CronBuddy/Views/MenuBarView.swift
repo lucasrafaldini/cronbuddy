@@ -21,8 +21,7 @@ struct MenuBarLabel: View {
         // The label is the only view alive at launch, so it owns window requests.
         .onReceive(NotificationCenter.default.publisher(for: .openMainWindow)) { _ in showMainWindow() }
         .onReceive(NotificationCenter.default.publisher(for: .openSettingsWindow)) { _ in
-            NSApp.activate()
-            openSettings()
+            AppPresence.show { openSettings() }
         }
         .task {
             if !didOnboard {
@@ -33,8 +32,7 @@ struct MenuBarLabel: View {
     }
 
     private func showMainWindow() {
-        openWindow(id: "main")
-        NSApp.activate()
+        AppPresence.show { openWindow(id: "main") }
     }
 
     private var symbol: String {
@@ -55,6 +53,7 @@ struct MenuBarLabel: View {
 struct MenuBarView: View {
     @Environment(\.theme) private var theme
     @Environment(AppModel.self) private var model
+    @AppStorage("theme") private var themeID = Theme.system.id
     @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
 
@@ -110,11 +109,23 @@ struct MenuBarView: View {
                     .help("New job")
                 Button { open(.overview) } label: { Image(systemName: "macwindow") }
                     .help("Open CronBuddy")
+                Menu {
+                    Picker("Theme", selection: $themeID) {
+                        ForEach(Theme.all) { Text($0.name).tag($0.id) }
+                    }
+                    .pickerStyle(.inline)
+                } label: {
+                    Image(systemName: "paintpalette")
+                }
+                .menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                .fixedSize()
+                .help("Theme")
+                .accessibilityLabel("Theme")
                 Button {
-                    NSApp.activate()
-                    openSettings()
+                    AppPresence.show { openSettings() }
                 } label: { Image(systemName: "gearshape") }
-                    .help("Settings")
+                    .help("Settings (⌘,)")
             }
             .buttonStyle(.borderless)
             .font(.body.weight(.medium))
@@ -201,8 +212,7 @@ struct MenuBarView: View {
 
     private func open(_ item: SidebarItem) {
         model.selection = item
-        openWindow(id: "main")
-        NSApp.activate()
+        AppPresence.show { openWindow(id: "main") }
     }
 
     private func newJob() {
