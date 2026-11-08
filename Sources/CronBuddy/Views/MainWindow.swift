@@ -35,6 +35,10 @@ struct MainWindow: View {
                     .help("New job (⌘N)")
                     .keyboardShortcut("n")
             }
+            ToolbarItem(placement: .primaryAction) {
+                SettingsLink { Label("Settings", systemImage: "gearshape") }
+                    .help("Settings (⌘,)")
+            }
         }
         .sheet(item: $model.editorRequest) { request in
             JobEditorView(request: request)

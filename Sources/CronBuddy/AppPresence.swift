@@ -9,22 +9,37 @@ enum AppPresence {
     /// and brings the window it opened to the front.
     static func show(_ open: @escaping @MainActor () -> Void = {}) {
         Task { @MainActor in
-            if NSApp.activationPolicy() != .regular {
-                NSApp.setActivationPolicy(.regular)
-                // Activating in the same turn as the policy change leaves the app with
-                // a menu bar that draws but ignores clicks. Let the change settle first.
-                try? await Task.sleep(for: .milliseconds(120))
-            }
-            NSApp.activate()
+            let wasAgent = NSApp.activationPolicy() != .regular
+            if wasAgent { NSApp.setActivationPolicy(.regular) }
+            activate()
             open()
             // SwiftUI creates the window asynchronously; front it once it exists, even if
             // macOS declined the activation request (cooperative activation, macOS 14+).
             try? await Task.sleep(for: .milliseconds(150))
-            if let window = NSApp.orderedWindows.first(where: isAppWindow) {
-                window.makeKeyAndOrderFront(nil)
-                window.orderFrontRegardless()
+            frontWindow()
+
+            guard wasAgent else { return }
+            // AppKit bug (FB7743313): an agent app (LSUIElement) that turns regular gets a
+            // menu bar that draws but ignores clicks until the app is activated again.
+            // Hand activation to the Dock for a moment and take it back.
+            if let dock = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.dock").first {
+                dock.activate()
+                try? await Task.sleep(for: .milliseconds(200))
+                activate()
+                frontWindow()
             }
         }
+    }
+
+    private static func activate() {
+        // The forceful variant: plain activate() is only a request macOS may decline.
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    private static func frontWindow() {
+        guard let window = NSApp.orderedWindows.first(where: isAppWindow) else { return }
+        window.makeKeyAndOrderFront(nil)
+        window.orderFrontRegardless()
     }
 
     /// Back to the menu bar once the last CronBuddy window has closed.

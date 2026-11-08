@@ -248,19 +248,64 @@ private struct Surface<S: InsettableShape>: ViewModifier {
     }
 }
 
-/// The translucent window backdrop of the glass theme: the desktop, blurred,
-/// under a faint wash of the accent color so the glass has something to refract.
+/// The window backdrop of the glass theme. On macOS 26 the window itself turns
+/// transparent and its background is Liquid Glass, so the desktop shows through,
+/// refracted. Earlier versions get the behind-window blur.
 struct GlassBackdrop: View {
     let tint: Color
 
     var body: some View {
-        ZStack {
-            BehindWindowBlur()
-            LinearGradient(
-                colors: [tint.opacity(0.16), tint.opacity(0.04), .clear],
-                startPoint: .topLeading, endPoint: .bottomTrailing
-            )
+        if #available(macOS 26, *) {
+            WindowGlass(tint: NSColor(tint))
+        } else {
+            ZStack {
+                BehindWindowBlur()
+                LinearGradient(
+                    colors: [tint.opacity(0.16), tint.opacity(0.04), .clear],
+                    startPoint: .topLeading, endPoint: .bottomTrailing
+                )
+            }
         }
+    }
+}
+
+@available(macOS 26, *)
+private struct WindowGlass: NSViewRepresentable {
+    let tint: NSColor
+
+    func makeNSView(context: Context) -> TransparentWindowGlass {
+        let view = TransparentWindowGlass()
+        view.style = .regular
+        view.tintColor = tint.withAlphaComponent(0.10)
+        return view
+    }
+
+    func updateNSView(_ view: TransparentWindowGlass, context: Context) {
+        view.tintColor = tint.withAlphaComponent(0.10)
+    }
+}
+
+/// Glass needs to see past the window, so it makes its window transparent while it is
+/// installed and puts the window back the way it was when the theme changes.
+@available(macOS 26, *)
+private final class TransparentWindowGlass: NSGlassEffectView {
+    private var restore: (opaque: Bool, background: NSColor)?
+
+    override func viewWillMove(toWindow newWindow: NSWindow?) {
+        if newWindow == nil, let window, let restore {
+            window.isOpaque = restore.opaque
+            window.backgroundColor = restore.background
+            self.restore = nil
+        }
+        super.viewWillMove(toWindow: newWindow)
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        guard let window, restore == nil else { return }
+        restore = (window.isOpaque, window.backgroundColor)
+        window.isOpaque = false
+        window.backgroundColor = .clear
     }
 }
 
