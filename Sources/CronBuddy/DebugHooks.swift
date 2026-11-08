@@ -42,6 +42,8 @@ enum DebugHooks {
         case "settings": NotificationCenter.default.post(name: .openSettingsWindow, object: nil)
         case "close-settings": NSApp.windows.first { $0.identifier?.rawValue.contains("Settings") == true || $0.title.contains("Settings") || $0.title == "General" || $0.title == "Appearance" || $0.title == "Advanced" }?.close()
         case "snap": snapshot(name: argument, dir: dir)
+        case "grab": grab(name: argument, dir: dir)
+        case "appearance": NSApp.appearance = argument.isEmpty ? nil : NSAppearance(named: argument == "light" ? .aqua : .darkAqua)
         default: break
         }
     }
@@ -61,6 +63,24 @@ enum DebugHooks {
         window.center()
         window.orderFront(nil)
         preview = window
+    }
+
+    /// Captures the app's own windows through the window server, so materials and
+    /// Liquid Glass render as on screen (`cacheDisplay` can't draw them).
+    private static func grab(name: String, dir: String) {
+        typealias CreateImage = @convention(c) (CGRect, UInt32, UInt32, UInt32) -> Unmanaged<CGImage>?
+        guard let symbol = dlsym(UnsafeMutableRawPointer(bitPattern: -2), "CGWindowListCreateImage") else { return }
+        let create = unsafeBitCast(symbol, to: CreateImage.self)
+        var index = 0
+        for window in NSApp.windows where window.isVisible && window.frame.height > 60 {
+            // kCGWindowListOptionIncludingWindow, kCGWindowImageBoundsIgnoreFraming | BestResolution
+            guard let image = create(.null, 1 << 3, UInt32(window.windowNumber), 1 << 0 | 1 << 3)?.takeRetainedValue()
+            else { continue }
+            let rep = NSBitmapImageRep(cgImage: image)
+            guard let data = rep.representation(using: .png, properties: [:]) else { continue }
+            try? data.write(to: URL(fileURLWithPath: dir).appending(path: "\(name)-\(index).png"))
+            index += 1
+        }
     }
 
     private static func snapshot(name: String, dir: String) {

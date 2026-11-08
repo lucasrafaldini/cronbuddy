@@ -25,8 +25,7 @@ struct Card<Content: View>: View {
         }
         .padding(padding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(theme.border))
+        .surface(theme, in: RoundedRectangle(cornerRadius: theme.isGlass ? 18 : 12, style: .continuous))
     }
 }
 
@@ -133,8 +132,7 @@ struct Stat: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(theme.border))
+        .surface(theme, in: RoundedRectangle(cornerRadius: theme.isGlass ? 18 : 12, style: .continuous))
     }
 }
 
@@ -160,7 +158,7 @@ struct EmptyState: View {
                 .frame(maxWidth: 360)
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
-                    .buttonStyle(.borderedProminent)
+                    .prominentButton(theme)
                     .padding(.top, 4)
             }
         }

@@ -27,13 +27,17 @@ struct MainWindow: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(theme.isNative ? Color.clear : theme.background)
+            .windowBackground(theme)
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button { model.newJob() } label: { Label("New Job", systemImage: "plus") }
                     .help("New job (⌘N)")
                     .keyboardShortcut("n")
+            }
+            ToolbarItem(placement: .primaryAction) {
+                SettingsLink { Label("Settings", systemImage: "gearshape") }
+                    .help("Settings (⌘,)")
             }
         }
         .sheet(item: $model.editorRequest) { request in
@@ -48,15 +52,12 @@ struct MainWindow: View {
         } message: {
             Text(model.alertMessage ?? "")
         }
-        .toolbarBackground(theme.isNative ? Color.clear : theme.background, for: .windowToolbar)
-        .toolbarBackground(theme.isNative ? .automatic : .visible, for: .windowToolbar)
+        .toolbarBackground(theme.usesNativeChrome ? Color.clear : theme.background, for: .windowToolbar)
+        .toolbarBackground(theme.usesNativeChrome ? .automatic : .visible, for: .windowToolbar)
         .frame(minWidth: 860, minHeight: 560)
         .onAppear {
-            NSApp.setActivationPolicy(.regular)
-            NSApp.activate()
-        }
-        .onDisappear {
-            NSApp.setActivationPolicy(.accessory)
+            // Also covers windows macOS restores or reopens without going through the menu bar.
+            if NSApp.activationPolicy() != .regular { AppPresence.show() }
         }
     }
 }

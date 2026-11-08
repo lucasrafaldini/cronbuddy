@@ -28,6 +28,12 @@ APP="build/CronBuddy.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN_DIR/CronBuddy" "$APP/Contents/MacOS/CronBuddy"
+# macOS draws an app in its current design (Liquid Glass on macOS 26) only when the
+# binary records a matching SDK. SwiftPM's swiftbuild backend records the deployment
+# target instead, so stamp the SDK the app was actually built against.
+MIN_MACOS="$(otool -l "$APP/Contents/MacOS/CronBuddy" | awk '/LC_BUILD_VERSION/{f=1} f&&/minos/{print $2; exit}')"
+vtool -set-build-version macos "$MIN_MACOS" "$(xcrun --show-sdk-version)" -replace \
+  -output "$APP/Contents/MacOS/CronBuddy" "$APP/Contents/MacOS/CronBuddy"
 cp assets/app_icon.icns "$APP/Contents/Resources/AppIcon.icns"
 sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD_NUMBER/" Support/Info.plist > "$APP/Contents/Info.plist"
 dot_clean -m "$APP" 2>/dev/null || true
