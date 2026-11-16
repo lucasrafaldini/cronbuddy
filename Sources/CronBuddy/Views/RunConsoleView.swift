@@ -28,8 +28,8 @@ struct RunConsoleView: View {
             }
         }
         .padding(14)
-        .background(theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(stateColor.opacity(0.5)))
+        .surface(theme, in: RoundedRectangle(cornerRadius: theme.isGlass ? 18 : 12, style: .continuous), bordered: false)
+        .overlay(RoundedRectangle(cornerRadius: theme.isGlass ? 18 : 12, style: .continuous).strokeBorder(stateColor.opacity(0.5)))
     }
 
     private var placeholder: String {

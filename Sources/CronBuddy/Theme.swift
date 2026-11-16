@@ -20,8 +20,20 @@ struct Theme: Identifiable, Hashable {
     let onAccent: Color
     let bodyDesign: Font.Design
     let titleDesign: Font.Design
+    var finish: Finish = .solid
+
+    enum Finish: Hashable {
+        /// Surfaces are painted with the theme's colors.
+        case solid
+        /// Surfaces are Liquid Glass over a translucent window (macOS 26+, materials before).
+        case glass
+    }
+
     /// The system theme defers to native window and list backgrounds.
     var isNative: Bool { id == Theme.system.id }
+    var isGlass: Bool { finish == .glass }
+    /// Toolbars, sheets and the menu bar panel keep the system's own chrome.
+    var usesNativeChrome: Bool { isNative || isGlass }
 
     static let system = Theme(
         id: "system", name: "System", tagline: "Follows macOS appearance and accent color",
@@ -80,7 +92,21 @@ struct Theme: Identifiable, Hashable {
         bodyDesign: .rounded, titleDesign: .rounded
     )
 
-    static let all: [Theme] = [.system, .thoth, .paper, .phosphor, .nord]
+    static let glass = Theme(
+        id: "glass", name: "Liquid Glass", tagline: "Translucent glass that follows light and dark",
+        scheme: nil,
+        background: .clear,
+        surface: Color.primary.opacity(0.05),
+        raised: Color.primary.opacity(0.06),
+        border: Color.primary.opacity(0.10),
+        text: .primary, secondary: .secondary, accent: .accentColor,
+        success: .green, warning: .orange, danger: .red,
+        onAccent: .white,
+        bodyDesign: .default, titleDesign: .default,
+        finish: .glass
+    )
+
+    static let all: [Theme] = [.system, .glass, .thoth, .paper, .phosphor, .nord]
 
     static func named(_ id: String) -> Theme {
         all.first { $0.id == id } ?? .system
@@ -120,13 +146,177 @@ extension View {
     func themed(_ theme: Theme) -> some View { modifier(Themed(theme: theme)) }
 
     /// Replaces a scroll view's native background with the theme's, except for the system theme.
+    /// Glass hides it, so the glass or window behind shows through.
     func themedBackground(_ theme: Theme, _ color: KeyPath<Theme, Color> = \.background) -> some View {
         Group {
             if theme.isNative {
                 self
+            } else if theme.isGlass {
+                self.scrollContentBackground(.hidden)
             } else {
                 self.scrollContentBackground(.hidden).background(theme[keyPath: color])
             }
         }
     }
+
+    /// The background of a window or panel. `backdrop` adds the translucent glass backdrop;
+    /// sheets and the menu bar panel already have the system's material.
+    func windowBackground(_ theme: Theme, backdrop: Bool = true) -> some View {
+        Group {
+            if theme.isNative {
+                self
+            } else if theme.isGlass {
+                if backdrop { self.background(GlassBackdrop(tint: theme.accent).ignoresSafeArea()) } else { self }
+            } else {
+                self.background(theme.background)
+            }
+        }
+    }
+
+    /// A floating surface: the theme's fill and hairline, or Liquid Glass.
+    /// `tint` colors the surface (a selected chip, for instance).
+    func surface<S: InsettableShape>(
+        _ theme: Theme, in shape: S, fill: KeyPath<Theme, Color> = \.surface,
+        tint: Color? = nil, bordered: Bool = true, interactive: Bool = false
+    ) -> some View {
+        modifier(Surface(theme: theme, shape: shape, fill: fill, tint: tint, bordered: bordered, interactive: interactive))
+    }
+
+    /// Groups content on its own glass platter, Control Center style. No change for solid themes.
+    func glassPlatter(_ theme: Theme) -> some View {
+        Group {
+            if theme.isGlass {
+                self.padding(10).surface(theme, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            } else {
+                self
+            }
+        }
+    }
+
+    /// The prominent button of a screen: glass in the glass theme, bordered elsewhere.
+    func prominentButton(_ theme: Theme) -> some View {
+        Group {
+            if #available(macOS 26, *), theme.isGlass {
+                self.buttonStyle(.glassProminent)
+            } else {
+                self.buttonStyle(.borderedProminent)
+            }
+        }
+    }
+
+    func secondaryButton(_ theme: Theme) -> some View {
+        Group {
+            if #available(macOS 26, *), theme.isGlass {
+                self.buttonStyle(.glass)
+            } else {
+                self.buttonStyle(.bordered)
+            }
+        }
+    }
+}
+
+private struct Surface<S: InsettableShape>: ViewModifier {
+    let theme: Theme
+    let shape: S
+    let fill: KeyPath<Theme, Color>
+    let tint: Color?
+    let bordered: Bool
+    let interactive: Bool
+
+    func body(content: Content) -> some View {
+        if theme.isGlass {
+            if #available(macOS 26, *) {
+                content.glassEffect(glass, in: shape)
+            } else {
+                content
+                    .background(tint.map { AnyShapeStyle($0.opacity(0.85)) } ?? AnyShapeStyle(.regularMaterial), in: shape)
+                    .overlay(shape.strokeBorder(Color.white.opacity(0.14)))
+            }
+        } else {
+            content
+                .background(tint ?? theme[keyPath: fill], in: shape)
+                .overlay { if bordered { shape.strokeBorder(theme.border) } }
+        }
+    }
+
+    @available(macOS 26, *)
+    private var glass: Glass {
+        var glass = Glass.regular
+        if let tint { glass = glass.tint(tint) }
+        if interactive { glass = glass.interactive() }
+        return glass
+    }
+}
+
+/// The window backdrop of the glass theme. On macOS 26 the window itself turns
+/// transparent and its background is Liquid Glass, so the desktop shows through,
+/// refracted. Earlier versions get the behind-window blur.
+struct GlassBackdrop: View {
+    let tint: Color
+
+    var body: some View {
+        if #available(macOS 26, *) {
+            WindowGlass(tint: NSColor(tint))
+        } else {
+            ZStack {
+                BehindWindowBlur()
+                LinearGradient(
+                    colors: [tint.opacity(0.16), tint.opacity(0.04), .clear],
+                    startPoint: .topLeading, endPoint: .bottomTrailing
+                )
+            }
+        }
+    }
+}
+
+@available(macOS 26, *)
+private struct WindowGlass: NSViewRepresentable {
+    let tint: NSColor
+
+    func makeNSView(context: Context) -> TransparentWindowGlass {
+        let view = TransparentWindowGlass()
+        view.style = .regular
+        view.tintColor = tint.withAlphaComponent(0.10)
+        return view
+    }
+
+    func updateNSView(_ view: TransparentWindowGlass, context: Context) {
+        view.tintColor = tint.withAlphaComponent(0.10)
+    }
+}
+
+/// Glass needs to see past the window, so it makes its window transparent while it is
+/// installed and puts the window back the way it was when the theme changes.
+@available(macOS 26, *)
+private final class TransparentWindowGlass: NSGlassEffectView {
+    private var restore: (opaque: Bool, background: NSColor)?
+
+    override func viewWillMove(toWindow newWindow: NSWindow?) {
+        if newWindow == nil, let window, let restore {
+            window.isOpaque = restore.opaque
+            window.backgroundColor = restore.background
+            self.restore = nil
+        }
+        super.viewWillMove(toWindow: newWindow)
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        guard let window, restore == nil else { return }
+        restore = (window.isOpaque, window.backgroundColor)
+        window.isOpaque = false
+        window.backgroundColor = .clear
+    }
+}
+
+private struct BehindWindowBlur: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSVisualEffectView {
+        let view = NSVisualEffectView()
+        view.material = .underWindowBackground
+        view.blendingMode = .behindWindow
+        view.state = .followsWindowActiveState
+        return view
+    }
+
+    func updateNSView(_ view: NSVisualEffectView, context: Context) {}
 }

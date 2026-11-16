@@ -10,6 +10,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Menu bar first: no Dock icon until the main window opens.
         NSApp.setActivationPolicy(.accessory)
+        NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification, object: nil, queue: .main
+        ) { note in
+            guard let window = note.object as? NSWindow else { return }
+            MainActor.assumeIsolated { AppPresence.windowWillClose(window) }
+        }
     }
 
     /// Opening CronBuddy again from Finder or Spotlight shows the main window.

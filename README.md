@@ -106,10 +106,12 @@ Settings (⌘,) has *open at login*, the menu bar countdown, how many runs to ke
 
 <img src="docs/screenshots/settings.png" alt="Settings" width="560">
 
-Five themes: System, Thoth (black and gold, in serif), Paper, Nord and Phosphor.
+Six themes: System, Liquid Glass, Thoth (black and gold, in serif), Paper, Nord and Phosphor. Liquid Glass follows macOS light and dark: cards and the menu bar's groups are real glass (macOS 26) over a translucent window tinted with your accent color.
 
-| Thoth | Paper |
+| Liquid Glass, dark | Liquid Glass, light |
 | --- | --- |
+| ![Liquid Glass, dark](docs/screenshots/theme-glass.png) | ![Liquid Glass, light](docs/screenshots/theme-glass-light.png) |
+| **Thoth** | **Paper** |
 | ![Thoth](docs/screenshots/theme-thoth.png) | ![Paper](docs/screenshots/theme-paper.png) |
 | **Nord** | **Phosphor** |
 | ![Nord](docs/screenshots/theme-nord.png) | ![Phosphor](docs/screenshots/theme-phosphor.png) |
@@ -163,7 +165,7 @@ A versão 2 foi reescrita em Swift e SwiftUI e substitui o app original em Pytho
 - **Notificações** quando uma execução falha (ou, opcionalmente, quando dá certo, com prévia da saída).
 - **Templates:** vinte jobs prontos, incluindo cotação do dólar, SELIC/CDI/IPCA, clima, backups, checagem de site no ar e lembretes de pausa.
 - **Importar do crontab:** entradas existentes viram jobs gerenciados com um clique.
-- **Temas:** Sistema, Thoth (preto e dourado), Paper, Phosphor e Nord.
+- **Temas:** Sistema, Liquid Glass (vidro do macOS 26, claro e escuro), Thoth (preto e dourado), Paper, Phosphor e Nord.
 
 ### Instalação
 
@@ -197,7 +199,7 @@ La versión 2 está reescrita en Swift y SwiftUI y reemplaza la app original en 
 - **Barra de menús primero:** próximas ejecuciones, último resultado de cada job y botones para ejecutar o pausar sin abrir ventanas.
 - **Cuatro tipos de acción:** comando de shell, archivo de script, AppleScript o cualquier atajo de la app Atajos.
 - **Programación en lenguaje natural:** cada N minutos u horas, diaria en varios horarios, días de la semana o del mes, al iniciar sesión o expresión cron, con vista previa de las próximas ejecuciones.
-- **launchd o cron**, prueba en vivo antes de guardar, historial con salida y código de salida, notificaciones de fallos, veinte plantillas, importación desde crontab y cinco temas.
+- **launchd o cron**, prueba en vivo antes de guardar, historial con salida y código de salida, notificaciones de fallos, veinte plantillas, importación desde crontab y seis temas, entre ellos Liquid Glass.
 
 ### Instalación
 

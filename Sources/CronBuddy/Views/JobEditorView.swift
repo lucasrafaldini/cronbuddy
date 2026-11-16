@@ -166,13 +166,13 @@ struct JobEditorView: View {
                     dismiss()
                 }
                 .keyboardShortcut(.defaultAction)
-                .buttonStyle(.borderedProminent)
+                .prominentButton(theme)
                 .disabled(!assembled.problems.isEmpty)
             }
             .padding(16)
         }
         .frame(width: 640, height: 760)
-        .background(theme.isNative ? Color.clear : theme.background)
+        .windowBackground(theme, backdrop: false)
         .task {
             if case .shortcut = draft.action { await loadShortcuts() }
         }

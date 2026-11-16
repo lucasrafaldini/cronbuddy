@@ -54,7 +54,7 @@ struct ExternalView: View {
                 }
                 Spacer()
                 Button("Import") { confirm(entry) }
-                    .buttonStyle(.borderedProminent)
+                    .prominentButton(theme)
             }
         }
     }

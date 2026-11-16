@@ -81,7 +81,7 @@ struct JobDetailView: View {
             Button { model.runNow(job) } label: {
                 Label("Run Now", systemImage: "play.fill")
             }
-            .buttonStyle(.borderedProminent)
+            .prominentButton(theme)
             .disabled(status == .running)
             .keyboardShortcut("r")
 

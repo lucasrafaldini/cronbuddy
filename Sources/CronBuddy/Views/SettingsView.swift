@@ -88,8 +88,16 @@ private struct ThemeSwatch: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(theme.background)
+                if theme.isGlass {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(LinearGradient(
+                            colors: [Color(hex: 0x5AA9F5), Color(hex: 0x9B7CF2), Color(hex: 0xF29BB8)],
+                            startPoint: .topLeading, endPoint: .bottomTrailing
+                        ))
+                } else {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(theme.background)
+                }
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 5) {
                         Circle().fill(theme.success).frame(width: 7, height: 7)
@@ -106,7 +114,7 @@ private struct ThemeSwatch: View {
                     }
                 }
                 .padding(10)
-                .background(theme.surface, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                .surface(theme, in: RoundedRectangle(cornerRadius: theme.isGlass ? 9 : 7, style: .continuous), bordered: false)
                 .padding(8)
             }
             .frame(height: 96)
