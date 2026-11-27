@@ -47,6 +47,8 @@ make install
 
 `make install` builds `CronBuddy.app` and copies it to `/Applications`. Use `make app` to only build it into `build/`, `make dmg` for a disk image, and `make test` to run the test suite.
 
+> **Linux:** A GTK 3 + Ayatana AppIndicator3 companion port for `systemd --user` timers and `cron` lives in [`linux/`](linux/README.md).
+
 On first launch CronBuddy opens its window once, then lives in the menu bar. Opening the app again from Finder or Spotlight brings the window back.
 
 ### 2. The menu bar

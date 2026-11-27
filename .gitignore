@@ -6,3 +6,8 @@ build/
 *.xcodeproj/
 xcuserdata/
 DerivedData/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.eggs/
+*.egg-info/
